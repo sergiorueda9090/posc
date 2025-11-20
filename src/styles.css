@@ -1,0 +1,41 @@
+
+
+.coral-pixels-regular {
+  font-family: "Coral Pixels", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+
+
+body {
+  font-family: 'Kanchenjunga', serif !important;
+}
+
+code {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.recepcion {
+  background-color: #1e90ff; /* Azul */
+  color: white;
+}
+
+.validacion {
+  background-color: #ffd700; /* Amarillo */
+  color: black;
+}
+
+.ejecucion {
+  background-color: #ffa500; /* Naranja */
+  color: white;
+}
+
+.finalizacion {
+  background-color: #32cd32; /* Verde */
+  color: white;
+}
+
+.swal-popup-zindex {
+  z-index: 1000000 !important;
+}
