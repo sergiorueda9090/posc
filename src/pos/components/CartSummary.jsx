@@ -150,10 +150,10 @@ export const CartSummary = ({ currentClient, openClientModal, totals }) => {
                     <Typography>Subtotal:</Typography>
                     <Typography>{formatCurrency(totals.subtotalAfterDiscount)}</Typography>
                 </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                {/*<Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography>Impuestos (16%):</Typography>
                     <Typography>{formatCurrency(totals.taxValue)}</Typography>
-                </Box>
+                </Box>*/}
                 <Divider sx={{ my: 1 }} />
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant="h5" color="primary" sx={{ fontWeight: 'bold' }}>TOTAL:</Typography>

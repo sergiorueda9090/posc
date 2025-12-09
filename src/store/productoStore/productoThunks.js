@@ -10,7 +10,7 @@ const endpoint_create    = "create/";
 const endpoint_update    = "update/";
 
 
-export const getAllThunks = ({page = 1,  pageSize = 10, search = "", start_date = "", end_date = "",} = {}) => {
+export const getAllThunks = ({page = 1,  pageSize = 10, search = "", start_date = "", end_date = "", proveedor_id = ""} = {}) => {
 
   return async (dispatch, getState) => {
 
@@ -28,7 +28,8 @@ export const getAllThunks = ({page = 1,  pageSize = 10, search = "", start_date 
     if (search) params.append("search", search);
     if (start_date) params.append("start_date", start_date);
     if (end_date) params.append("end_date", end_date);
-
+    if (proveedor_id) params.append("proveedor_id", proveedor_id);
+    
     const options = {
       method: "GET",
       url: `${URL}${namespace_api}${endpoint}?${params.toString()}`,

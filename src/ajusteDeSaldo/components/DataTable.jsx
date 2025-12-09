@@ -4,7 +4,7 @@ import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useSelector, useDispatch } from 'react-redux';
-import { showThunk, deleteThunk, getAllThunks } from '../../store/cargosNoRegistradosStore/cargosNoRegistradosThunks';
+import { showThunk, deleteThunk, getAllThunks } from '../../store/ajusteDeSaldoStore/ajusteDeSaldoThunks';
 import { Box } from "@mui/material";
 import { showAlert } from '../../store/globalStore/globalStore';
 import { SearchQuery } from './SearchQuery';
@@ -14,8 +14,8 @@ export function DataTable() {
 
   const dispatch = useDispatch();
 
-  const { cargosNoRegistrados } = useSelector(state => state.cargosNoRegistradosStore);
-  console.log("=== cargosNoRegistrados ===", cargosNoRegistrados);
+  const { ajustesDeSaldo } = useSelector(state => state.ajusteDeSaldoStore);
+
   const [page,     setPage]     = React.useState(0);
   const [pageSize, setPageSize] = React.useState(30);
 
@@ -26,8 +26,7 @@ export function DataTable() {
   const columns = [
     { field: 'id',                    headerName: 'ID',                   width: 60 },
     { field: 'cliente_id',            headerName: 'Cliente',                width: 180 },
-    { field: 'tarjeta_id',            headerName: 'Tarjeta',                width: 180 },
-    { field: 'valor',           headerName: 'Valor',          width: 250,      
+    { field: 'valor',                 headerName: 'Valor',          width: 250,      
       renderCell: (params) => {
         const formattedValue =
           params.value == null
@@ -44,7 +43,7 @@ export function DataTable() {
         );
       },
     },
-    { field: 'descripcion',  headerName: 'Descripción',          width: 250 },
+    { field: 'descripcion',           headerName: 'Descripción',          width: 250 },
     { field: 'creado_por_username',   headerName: 'Creado por',           width: 180 },
     {
       field: 'created_at',
@@ -122,10 +121,10 @@ export function DataTable() {
       </Box>
 
       <DataGrid
-      rows={cargosNoRegistrados?.results || []}
+      rows={ajustesDeSaldo?.results || []}
       columns={columns}
       paginationMode="server"
-      rowCount={cargosNoRegistrados?.count || 0} // total de registros desde el backend
+      rowCount={ajustesDeSaldo?.count || 0} // total de registros desde el backend
 
       paginationModel={{
         page: page,

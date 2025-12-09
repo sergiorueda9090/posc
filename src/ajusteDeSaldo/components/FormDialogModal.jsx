@@ -12,10 +12,9 @@ import {
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { closeModalShared, showAlert } from "../../store/globalStore/globalStore";
-import { getAllThunks as getAllTarjetasBancarias } from "../../store/tarjetasBancariasStore/tarjetasBancariasStoreThunks";
 import { getAllThunks as getAllClientes } from "../../store/clienteStore/clienteThunks";
 
-import { createThunks, updateThunks } from "../../store/cargosNoRegistradosStore/cargosNoRegistradosThunks";
+import { createThunks, updateThunks } from "../../store/ajusteDeSaldoStore/ajusteDeSaldoThunks";
 
 import { useForm } from "../Hook/useForm";
 
@@ -26,13 +25,11 @@ export const FormDialogModal = () => {
   
   useEffect(() => {
     dispatch(getAllClientes());
-    dispatch(getAllTarjetasBancarias());
   }, [dispatch]);
 
   const { openModalStore } = useSelector((state) => state.globalStore);
   const {clientes}       = useSelector((state) => state.clientesStore);
-  const {tarjetas}       = useSelector((state) => state.tarjetasBancariasStore);
-  const cargosNoRegistradosStore = useSelector((state) => state.cargosNoRegistradosStore);
+  const ajusteDeSaldoStore = useSelector((state) => state.ajusteDeSaldoStore);
 
 
   const hableData = () => {
@@ -45,19 +42,8 @@ export const FormDialogModal = () => {
 
 
   const options        = hableData();
-  const selectedOption = options.find((opt) => opt.id == cargosNoRegistradosStore.cliente_id) || null;
-
-  const hableTarjetasData = () => {
-    const results = tarjetas?.results ?? [];
-    return results.map((tarjeta) => ({
-      label: tarjeta?.nombre ?? "Sin nombre",
-      id   : tarjeta?.id ?? null,
-    }));
-  };
-
-  const optionsTarjetas        = hableTarjetasData();
-  const selectedOptionTarjetas = optionsTarjetas.find((opt) => opt.id == cargosNoRegistradosStore.tarjeta_id) || null;
-
+  const selectedOption = options.find((opt) => opt.id == ajusteDeSaldoStore.cliente_id) || null;
+  
   const {
     formValues,
     errors,
@@ -66,7 +52,7 @@ export const FormDialogModal = () => {
     validateUpdate,
     setErrors,
     resetForm,
-  } = useForm(cargosNoRegistradosStore);
+  } = useForm(ajusteDeSaldoStore);
 
   const formatNumber = (value) => {
     if (!value) return "";
@@ -112,9 +98,10 @@ export const FormDialogModal = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const isEdit = Boolean(formValues.idCargosNoRegistrados);
-    const isValid = isEdit ? validateUpdate() : validateCreate();
+    const isEdit = Boolean(formValues.idAjusteDeSaldo);
 
+    const isValid = isEdit ? validateUpdate() : validateCreate();
+   
     if (!isValid) {
       const errorMessages = Object.values(errors).join("\n");
 
@@ -129,15 +116,14 @@ export const FormDialogModal = () => {
     }
 
     const data = {
-      cliente_id: formValues.cliente_id,
-      tarjeta_id: formValues.tarjeta_id,
-      valor: removeThousandsSeparator(formValues.valor),
-      descripcion: formValues.descripcion,
+      cliente_id  : formValues.cliente_id,
+      valor       : removeThousandsSeparator(formValues.valor),
+      descripcion : formValues.descripcion,
       creado_por_username: formValues.creado_por_username,
     };
 
     if (isEdit) {
-      dispatch(updateThunks({ id: formValues.idCargosNoRegistrados, ...data }));
+      dispatch(updateThunks({ id: formValues.idAjusteDeSaldo, ...data }));
     } else {
       dispatch(createThunks(data));
     }
@@ -148,7 +134,7 @@ export const FormDialogModal = () => {
   return (
     <Dialog open={openModalStore} keepMounted onClose={handleClose} fullWidth maxWidth="md">
       <DialogTitle sx={{ padding: "16px 4px 0px 16px" }}>
-        {formValues.idCargosNoRegistrados ? "Editar Cargos No Registrados" : "Crear Cargos No Registrados"}
+         {formValues.idAjusteDeSaldo ? "Editar Ajuste de saldo" : "Crear Ajuste de saldo"}
       </DialogTitle>
 
       <form onSubmit={handleSubmit}>
@@ -177,28 +163,7 @@ export const FormDialogModal = () => {
                 }}
               />
             </Grid>
-
-            <Grid item xs={6}>
-              <Autocomplete
-                options={optionsTarjetas}
-                value={selectedOptionTarjetas}
-                getOptionLabel={(option) => option?.label || ""}
-                size="small"
-                renderInput={(params) => (
-                  <TextField {...params} label="Tarjetas" name="tarjeta_id" />
-                )}
-                onChange={(event, newValue) => {
-                  handleChange({
-                    target: {
-                      name: "tarjeta_id",
-                      value: newValue?.id ?? ""
-                    }
-                  });
-                }}
-              />
-            </Grid>
-
-            
+         
             <Grid item xs={6}>
               <TextField
                 fullWidth
@@ -240,7 +205,7 @@ export const FormDialogModal = () => {
             Cancelar
           </Button>
           <Button type="submit" variant="outlined" color="primary">
-            {formValues.idCargosNoRegistrados ? "Guardar Cambios" : "Actualizar"}
+            { formValues.idAjusteDeSaldo ? "Actualizar" : "Crear" }
           </Button>
         </DialogActions>
       </form>

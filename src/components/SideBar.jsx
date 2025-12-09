@@ -18,7 +18,8 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import StoreMallDirectoryIcon from '@mui/icons-material/StoreMallDirectory';
 
 const StyledLink = styled(Link)({
   textDecoration: 'none',
@@ -29,9 +30,10 @@ const StyledLink = styled(Link)({
 export const SideBar = ({ drawerWidth = 240, mobileOpen, handleDrawerToggle, isSidebarOpen }) => {
   const location = useLocation();
 
-  //Aquí agregas todos los módulos del menú
+  //Aquí agregas todos los módulos del menú Proveedores
   const items = [
     { text: 'Usuarios',             icon: <PeopleIcon />,                     route: '/users' },
+    { text: 'Proveedores',          icon: <StoreMallDirectoryIcon />,         route: '/proveedores' },
     { text: 'Clientes',             icon: <MonetizationOnIcon />,             route: '/clientes' },
     { text: 'Categorias',           icon: <CategoryIcon />,                   route: '/categorias' },
     { text: 'Subcategorias',        icon: <WidgetsIcon />,                    route: '/subcategorias' },
@@ -43,6 +45,7 @@ export const SideBar = ({ drawerWidth = 240, mobileOpen, handleDrawerToggle, isS
     { text: 'Recepción de Pagos',   icon: <RequestQuoteIcon />,               route: '/recepcionpagos' },
     { text: 'Cargos No Registrados',icon: <PendingActionsIcon />,               route: '/cargosnoregistrados' },
     { text: 'Ajuste de Saldo',      icon: <SwapHorizIcon />,                  route: '/ajustedesaldo' },
+    { text: 'Utilidad ocasional',   icon: <TrendingUpIcon />,                 route: '/utilidadocasional' }
   ];
 
   const renderItems = (onClickHandler = null) => (

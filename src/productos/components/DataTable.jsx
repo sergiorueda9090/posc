@@ -34,11 +34,42 @@ export function DataTable() {
   
 
   const columns = [
-    { field: 'id',                     headerName: 'ID',                   width: 60 ,headerAlign: 'right', align: 'right' },
-    { field: 'categoria',              headerName: 'Categoria',            width: 220 ,headerAlign: 'right', align: 'right' },
-    { field: 'subcategoria',           headerName: 'Subcategoria',         width: 220 ,headerAlign: 'right', align: 'right' },
-    { field: 'nombre',                 headerName: 'Nombre',               width: 220 ,headerAlign: 'right', align: 'right' },
-    { field: 'descripcion',            headerName: 'Descripción',          width: 250 ,headerAlign: 'right', align: 'right' },
+    { field: 'id',                     headerName: 'ID',                   width: 60 ,  headerAlign: 'right', align: 'right' },
+    { field: 'categoria',              headerName: 'Categoria',            width: 220 , headerAlign: 'right', align: 'right' },
+    { field: 'subcategoria',           headerName: 'Subcategoria',         width: 220 , headerAlign: 'right', align: 'right' },
+    { field: 'proveedor',              headerName: 'Proveedor',            width: 220 , headerAlign: 'right', align: 'right' },
+    { field: 'nombre',                 headerName: 'Nombre',               width: 220 , headerAlign: 'right', align: 'right' },
+    { 
+      field: 'unidad_medida', 
+      headerName: 'Unidad de medida', 
+      width: 180, 
+      headerAlign: 'right', 
+      align: 'right',
+      valueGetter: (params) => {
+        const unidadesMap = {
+          'UND': 'Unidades (UND)',
+          'GRS': 'Gramos (GRS)',
+          'KGS': 'Kilogramos (KGS)'
+        };
+        return unidadesMap[params] || params;
+      }
+    },
+    {
+      field: 'genero', 
+      headerName: 'Género', 
+      width: 150,
+      headerAlign: 'right',
+      align: 'right',
+      valueGetter: (params) => {
+        const generoMap = {
+          'M': 'Masculino',
+          'F': 'Femenino',
+          'U': 'Unisex'
+        };
+        return generoMap[params] || params;
+      }
+    },
+    { field: 'descripcion',            headerName: 'Descripción',          width: 250 , headerAlign: 'right', align: 'right' },
     {
       field: 'precio_compra',
       headerName: 'Precio de compra',

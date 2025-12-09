@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Button, Box } from '@mui/material';
 import dayjs from "dayjs";
 
-import { getAllThunks } from '../../store/recepcionPagosStore/recepcionPagosThunks';
+import { getAllThunks } from '../../store/ajusteDeSaldoStore/ajusteDeSaldoThunks';
 import { startDateGlobalStore, endDateGlobalStore } from '../../store/globalStore/globalStore';
 
 export const DateRange = () => {

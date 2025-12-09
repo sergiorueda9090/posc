@@ -12,6 +12,7 @@ export const globalStore = createSlice({
     searchQuery         : '',
     openModalExcel      : false,
     openModalCantidad   : false,
+    openModalPedido     : false,
   },
   reducers: {
     showBackDropStore:(state) => {
@@ -37,6 +38,12 @@ export const globalStore = createSlice({
     },
     hideModalCantidad:(state, action) => {
         state.openModalCantidad = false;
+    },
+    showModalPedido:(state, action) => {
+      state.openModalPedido = true;
+    },
+    hideModalPedido:(state, action) => {
+      state.openModalPedido = false;
     },
     showLinearProgress:(state, action) => {
       state.openLinearProgress = true;
@@ -68,4 +75,4 @@ export const { showBackDropStore,      hideBackDropStore, openModalShared,
                 closeModalShared,      showLinearProgress, showModalCantidad,     
                 hideModalCantidad,    hideLinearProgress, startDateGlobalStore,  
                 endDateGlobalStore,    closeModalExcel,       openModalExcel, 
-                showAlert, clearAlert, searchQueryGlobalStore } = globalStore.actions;
+                showAlert, clearAlert, searchQueryGlobalStore, showModalPedido, hideModalPedido } = globalStore.actions;

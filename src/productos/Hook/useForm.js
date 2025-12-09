@@ -4,6 +4,7 @@ import {
   validateMainCreate,
   validateMainUpdate,
 } from "../validator/mainValidator";
+
 import {
   handleFormStoreThunk,
   resetFormularioThunk,
@@ -19,10 +20,13 @@ export const useForm = (productoStore) => {
     nombre,
     descripcion,
     precio_compra,
+    precio_venta,
     porcentaje_ganancia,
     total,
     codigo_busqueda,
+    unidad_medida,
     imagen,
+    genero,
     //cantidad,
   } = productoStore;
 
@@ -48,19 +52,33 @@ export const useForm = (productoStore) => {
 
   //Calcular total automáticamente
   useEffect(() => {
-    if (precio_compra && porcentaje_ganancia) {
-      const precio = parseFloat(precio_compra) || 0;
-      const porcentaje = parseFloat(porcentaje_ganancia) || 0;
-      const totalCalculado = precio + (precio * porcentaje) / 100;
-
+    if (precio_compra && precio_venta) {
+      const precioCompra = parseFloat(precio_compra) || 0;
+      const precioVenta = parseFloat(precio_venta) || 0;
+      
+      // Calcular el total (precio de venta)
       dispatch(
         handleFormStoreThunk({
           name: "total",
-          value: totalCalculado.toFixed(2),
+          value: precioVenta.toFixed(2),
         })
       );
+
+      // Calcular el porcentaje de ganancia
+      if (precioCompra > 0) {
+        const ganancia = precioVenta - precioCompra;
+        const porcentajeCalculado = (ganancia / precioCompra) * 100;
+        
+        dispatch(
+          handleFormStoreThunk({
+            name: "porcentaje_ganancia",
+            value: porcentajeCalculado.toFixed(2),
+          })
+        );
+      }
     }
-  }, [precio_compra, porcentaje_ganancia, dispatch]);
+  }, [precio_compra, precio_venta, dispatch]);
+
 
   const validateCreate = () => {
     const dataStore = {
@@ -69,9 +87,12 @@ export const useForm = (productoStore) => {
       nombre,
       descripcion,
       precio_compra,
+      precio_venta,
       porcentaje_ganancia,
       total,
       codigo_busqueda,
+      unidad_medida,
+      genero,
       //cantidad,
       imagen,
     };
@@ -87,9 +108,12 @@ export const useForm = (productoStore) => {
       nombre,
       descripcion,
       precio_compra,
+      precio_venta,
       porcentaje_ganancia,
       total,
       codigo_busqueda,
+      unidad_medida,
+      genero,
       //cantidad,
       imagen,
     };
@@ -111,10 +135,12 @@ export const useForm = (productoStore) => {
       nombre,
       descripcion,
       precio_compra: formatNumber(precio_compra),
+      precio_venta: formatNumber(precio_venta),
       porcentaje_ganancia,
       total: formatNumber(total),
       codigo_busqueda,
-      //cantidad,
+      unidad_medida,
+      genero,
       imagen,
     },
     errors,

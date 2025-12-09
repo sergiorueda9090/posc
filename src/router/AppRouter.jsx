@@ -15,6 +15,8 @@ import { MainPage as TarjetasBancarias }  from '../tarjetasBancarias/pages/MainP
 import { MainPage as RecepcionPagos }   from '../recepcionPagos/pages/MainPage';
 import { MainPage as CargosNoRegistrados }   from '../cargosNoRegistrados/pages/MainPage';
 import { MainPage as AjusteDeSaldo }   from '../ajusteDeSaldo/pages/MainPage';
+import { MainPage as UtilidadOcasional } from '../utilidadOcasional/pages/MainPage';
+import { MainPage as Proveedores } from '../proveedores/pages/MainPage';
 
 export const AppRouter = () => {
  
@@ -37,6 +39,8 @@ export const AppRouter = () => {
                 <Route path="/recepcionpagos"   element={ <RecepcionPagos /> } />
                 <Route path="/cargosnoregistrados"   element={ <CargosNoRegistrados /> } />
                 <Route path="/ajustedesaldo"   element={ <AjusteDeSaldo /> } />
+                <Route path="/utilidadocasional"   element={ <UtilidadOcasional /> } />
+                <Route path="/proveedores"   element={ <Proveedores /> } />
 
               </>
               ) : (

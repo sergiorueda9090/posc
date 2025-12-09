@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { validateMainCreate, validateMainUpdate } from "../validator/mainValidator";
-import { handleFormStoreThunk, resetFormularioThunk } from "../../store/cargosNoRegistradosStore/cargosNoRegistradosThunks";
+import { handleFormStoreThunk, resetFormularioThunk } from "../../store/ajusteDeSaldoStore/ajusteDeSaldoThunks";
 
 // Función para formatear miles
 const formatNumber = (value) => {
@@ -15,7 +15,7 @@ export const useForm = (dataStore) => {
 
   const dispatch = useDispatch();
   
-  const { idCargosNoRegistrados, cliente_id, tarjeta_id, valor, descripcion } = dataStore;
+  const { idAjusteDeSaldo, cliente_id, valor, descripcion } = dataStore;
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
@@ -25,7 +25,7 @@ export const useForm = (dataStore) => {
 
   const validateCreate = () => {
     const dataStore = {
-      tarjeta_id,
+      cliente_id,
       valor,
     };
     const validationErrors = validateMainCreate(dataStore);
@@ -35,8 +35,8 @@ export const useForm = (dataStore) => {
 
   const validateUpdate = () => {
     const dataStore = {
-      idCargosNoRegistrados,
-      tarjeta_id,
+      idAjusteDeSaldo,
+      cliente_id,
       valor,
     };
     const validationErrors = validateMainUpdate(dataStore);
@@ -51,9 +51,8 @@ export const useForm = (dataStore) => {
 
   return {
     formValues: {
-      idCargosNoRegistrados,
+      idAjusteDeSaldo,
       cliente_id,
-      tarjeta_id,
       valor: formatNumber(valor),   // 🔥🔥 formateo aquí
       descripcion,
     },

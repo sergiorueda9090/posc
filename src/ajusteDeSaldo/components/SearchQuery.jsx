@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 
-import { getAllThunks } from "../../store/recepcionPagosStore/recepcionPagosThunks";
+import { getAllThunks } from '../../store/ajusteDeSaldoStore/ajusteDeSaldoThunks';
 import { searchQueryGlobalStore, showAlert } from "../../store/globalStore/globalStore";
 
 export const SearchQuery = () => {

@@ -15,6 +15,10 @@ import { relacionarGastoStore } from './relacionarGastoStore/relacionarGastoStor
 import { tarjetasBancariasStore } from './tarjetasBancariasStore/tarjetasBancariasStore';
 import { recepcionPagosStore } from './recepcionPagosStore/recepcionPagosStore';
 import { cargosNoRegistradosStore } from './cargosNoRegistradosStore/cargosNoRegistradosStore';
+import { ajusteDeSaldoStore }  from './ajusteDeSaldoStore/ajusteDeSaldoStore';
+import { utilidadOcasionalStore } from './utilidadOcasionalStore/utilidadOcasionalStore';
+import { proveedoresStore } from './proveedoresStore/proveedoresStore';
+import { proveedoresOrdenesStore } from './proveedoresOrdenesStore/proveedoresOrdenesStore';
 
 export const store = configureStore({
   reducer: {
@@ -34,5 +38,9 @@ export const store = configureStore({
     tarjetasBancariasStore: tarjetasBancariasStore.reducer,
     recepcionPagosStore   : recepcionPagosStore.reducer,
     cargosNoRegistradosStore   : cargosNoRegistradosStore.reducer,
+    ajusteDeSaldoStore    : ajusteDeSaldoStore.reducer,
+    utilidadOcasionalStore: utilidadOcasionalStore.reducer,
+    proveedoresStore      : proveedoresStore.reducer,
+    proveedoresOrdenesStore : proveedoresOrdenesStore.reducer,
   }
 })

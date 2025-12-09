@@ -15,6 +15,9 @@ import { createThunks, updateThunks } from "../../store/productoStore/productoTh
 import { useForm } from "../Hook/useForm";
 import { SelectComponent } from "./SelectComponent";
 import { SubSelectComponent } from "./SubSelectComponent";
+import { SelectComponentUnidadMedida } from "./SelectComponentUnidadMedida";
+import { SelectComponentGenero } from "./SelectComponentGenero";
+import { SelectComponentProveedor } from "./SelectComponentProveedor";
 
 export const FormDialogModal = () => {
 
@@ -83,15 +86,18 @@ export const FormDialogModal = () => {
     const data = {
       categoria_id        : formValues.categoria_id,
       subcategoria_id     : formValues.subcategoria_id,
+      proveedor_id        : productoStore.proveedor_id,
       nombre              : formValues.nombre,
       descripcion         : formValues.descripcion,
       precio_compra       : formValues.precio_compra,
+      precio_venta        : formValues.precio_venta,
       porcentaje_ganancia : formValues.porcentaje_ganancia,
       total               : formValues.total,
       codigo_busqueda     : formValues.codigo_busqueda,
+      unidad_medida       : formValues.unidad_medida,
       imagen              : selectedImage,
-      //cantidad            : formValues.cantidad,
       creado_por_username : formValues.creado_por_username,
+      genero              : formValues.genero,
     };
 
     if (isEdit) {
@@ -135,17 +141,22 @@ export const FormDialogModal = () => {
                 </DialogContentText>
 
                 <Grid container spacing={2} sx={{ marginTop: 2 }}>
-                  <Grid item xs={6}>
+
+                  <Grid item xs={4}>
+                    <SelectComponentProveedor />
+                  </Grid>
+                  
+                  <Grid item xs={4}>
                     <SelectComponent />
                   </Grid>
 
-                  <Grid item xs={6}>
+                  <Grid item xs={4}>
                     <SubSelectComponent />
                   </Grid>
                 </Grid>
 
                 <Grid container spacing={2} sx={{ marginTop: 2 }}>
-                  <Grid item xs={6}>
+                  <Grid item xs={4}>
                     <TextField
                       fullWidth
                       id="nombre"
@@ -160,22 +171,15 @@ export const FormDialogModal = () => {
                     />
                   </Grid>
 
-                  <Grid item xs={6}>
-                    <TextField
-                      fullWidth
-                      id="descripcion"
-                      name="descripcion"
-                      label="Descripción"
-                      variant="outlined"
-                      value={formValues.descripcion}
-                      onChange={handleChange}
-                      error={Boolean(errors.descripcion)}
-                      helperText={errors.descripcion}
-                      size="small"
-                    />
+                  <Grid item xs={4}>
+                    <SelectComponentUnidadMedida />
                   </Grid>
 
                   <Grid item xs={4}>
+                    <SelectComponentGenero />
+                  </Grid>
+
+                  <Grid item xs={3}>
                     <TextField
                       fullWidth
                       id="precio_compra"
@@ -190,7 +194,22 @@ export const FormDialogModal = () => {
                     />
                   </Grid>
 
-                  <Grid item xs={4}>
+                  <Grid item xs={3}>
+                    <TextField
+                      fullWidth
+                      id="precio_venta"
+                      name="precio_venta"
+                      label="Precio de venta"
+                      variant="outlined"
+                      value={formValues.precio_venta}
+                      onChange={handleChange}
+                      error={Boolean(errors.precio_venta)}
+                      helperText={errors.precio_venta}
+                      size="small"
+                    />
+                  </Grid>
+
+                  <Grid item xs={2}>
                     <TextField
                       fullWidth
                       id="porcentaje_ganancia"
@@ -202,11 +221,15 @@ export const FormDialogModal = () => {
                       error={Boolean(errors.porcentaje_ganancia)}
                       helperText={errors.porcentaje_ganancia}
                       size="small"
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                      disabled
                     />
                   </Grid>
 
                   <Grid item xs={4}>
-                    <TextField
+                     <TextField
                       fullWidth
                       id="total"
                       name="total"
@@ -216,6 +239,25 @@ export const FormDialogModal = () => {
                       onChange={handleChange}
                       error={Boolean(errors.total)}
                       helperText={errors.total}
+                      size="small"
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                      disabled
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      id="descripcion"
+                      name="descripcion"
+                      label="Descripción"
+                      variant="outlined"
+                      value={formValues.descripcion}
+                      onChange={handleChange}
+                      error={Boolean(errors.descripcion)}
+                      helperText={errors.descripcion}
                       size="small"
                     />
                   </Grid>
@@ -234,21 +276,6 @@ export const FormDialogModal = () => {
                       size="small"
                     />
                   </Grid>
-
-                  {/* <Grid item xs={4}>
-                    <TextField
-                      fullWidth
-                      id="cantidad"
-                      name="cantidad"
-                      label="Cantidad"
-                      variant="outlined"
-                      value={formValues.cantidad}
-                      onChange={handleChange}
-                      error={Boolean(errors.cantidad)}
-                      helperText={errors.cantidad}
-                      size="small"
-                    />
-                  </Grid> */}
 
                     {/* IMAGEN */}
                     <Grid item xs={4}>

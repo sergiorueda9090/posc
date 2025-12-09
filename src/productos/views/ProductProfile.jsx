@@ -25,7 +25,7 @@ import ReplayIcon from "@mui/icons-material/Replay";
 
 export const ProductProfile = () => {
   // ================================
-  // 🔹 DATOS DE PRUEBA (DUMMY DATA)
+  // DATOS DE PRUEBA (DUMMY DATA)
   // ================================
   const producto = {
     nombre: "Perfume Chipre Dama 120ml",
