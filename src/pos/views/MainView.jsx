@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, use } from 'react';
 import { Container, Grid, Box, Typography, Button} from '@mui/material';
 
 import {  CatalogoProductos }   from '../components/CatalogoProductos.jsx';
@@ -16,15 +16,21 @@ import { useSelector, useDispatch } from 'react-redux';
 import { addToCartThunks, resetPosStoreThunk, handleFormStoreThunk, createVentaThunk, getVentasThunk } from '../../store/posStore/posThunks.js';
 import { showAlert } from '../../store/globalStore/globalStore.js';
 import { getAllThunks as getAllThunksClientes } from '../../store/clienteStore/clienteThunks.js';
+import { getCodigoVentaThunk } from "../../store/posStore/posThunks.js";
 import FooterPOS from '../components/FooterPOS.jsx';
 
 const MainView = () => {
     const { currentCart, efectivo_recibido, totals } = useSelector((state) => state.posStore);
+    const { codigo_venta }    = useSelector((state) => state.posStore);
     const dispatch = useDispatch();
 
     const [currentClient, setCurrentClient]         = useState(MOCK_CLIENTS_DB[0]);
     const [isClientModalOpen, setIsClientModalOpen] = useState(false);
     const [isCardModalOpen, setIsCardModalOpen]     = useState(false);
+
+    useEffect(() => {
+        dispatch( getCodigoVentaThunk() );
+    }, [codigo_venta, dispatch]);
 
     const handleSetIsClientModalOpen = (isOpen) => {
         dispatch(getAllThunksClientes());
@@ -102,7 +108,7 @@ const MainView = () => {
                 <hr style="border: 1px solid #ddd; margin: 10px 0;">
 
                 <div style="font-size:15px; line-height:1.6;">
-                    <p><strong>ID Venta:</strong> ${saleData.id}</p>
+                    <p><strong>ID Venta:</strong> ${codigo_venta}</p>
                     <p><strong>Cliente:</strong> ${saleData.client.name} <span style="color:#666;">(ID: ${saleData.client.id})</span></p>
                     <p><strong>Método de pago:</strong> ${saleData.method}</p>
                 </div>
@@ -172,7 +178,10 @@ const MainView = () => {
     };
 
 
-    const handleCashPayment = () => finalizeSale('Efectivo');
+    const handleCashPayment = () => {
+        finalizeSale('Efectivo');
+    }
+
     const handleCardPaymentFinalize = () => finalizeSale('Tarjeta');
     const handleAnularVenta = () => {
         if (window.confirm('¿Está seguro de anular la venta y vaciar el carrito?')) {

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { showBackDropStore, hideBackDropStore,openModalShared, closeModalShared, showAlert } from "../globalStore/globalStore.js";
 import { showStore, listStore, listVentasStore, resetFormularioStore, handleFormStore, 
-         addToCart, updateQuantity, removeItem } from "./posStore.js";
+         addToCart, updateQuantity, removeItem, getCodigoVentaStore } from "./posStore.js";
 
 import { URL } from "../../constants/constantGlogal.js";
 const namespace_api      = "/api/ventas/";
@@ -10,6 +10,7 @@ const endpoint_delete    = "/delete/";
 const endpoint_create    = "create/";
 const endpoint_update    = "update/";
 const endpoint_resumen   = "resumen/";
+const endpoint_get_siguiente_codigo_venta_v2 = "get-siguiente-codigo-venta-v2/";
 const bycategoria_endpoint = "bycategoria/";
 
 
@@ -153,6 +154,53 @@ export const getVentasThunk = ({page = 1,  pageSize = 10, search = "", start_dat
         console.log(" === getVentasThunk response.data ==== ", response.data );
         const ventas = response.data;
         await dispatch(listVentasStore({ ventas: ventas }));
+      } else {
+        console.error("⚠️ Error al obtener categorias:", response);
+      }
+    } catch (error) {
+      console.error("❌ Error en el servidor:", error);
+    } finally {
+      await dispatch(hideBackDropStore());
+    }
+  };
+};
+
+
+export const getCodigoVentaThunk = ({page = 1,  pageSize = 10, search = "", start_date = "", end_date = "",} = {}) => {
+
+  return async (dispatch, getState) => {
+
+    await dispatch(showBackDropStore());
+
+    const { authStore } = getState();
+    const token = authStore.token;
+
+    //Construir los parámetros dinámicamente
+    let params = new URLSearchParams();
+    
+    params.append("page", page);
+    params.append("page_size", pageSize);
+    
+    if (search) params.append("search", search);
+    if (start_date) params.append("start_date", start_date);
+    if (end_date) params.append("end_date", end_date);
+
+    const options = {
+      method: "GET",
+      url: `${URL}${namespace_api}${endpoint_get_siguiente_codigo_venta_v2}?${params.toString()}`,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    try {
+      const response = await axios.request(options);
+
+      if (response.status === 200) {
+        console.log(" === getVentasThunk response.data ==== ", response.data);
+        const get_codigo_venta = response.data.siguiente_codigo;
+        await dispatch(getCodigoVentaStore({ codigo_venta: get_codigo_venta }));
+
       } else {
         console.error("⚠️ Error al obtener categorias:", response);
       }

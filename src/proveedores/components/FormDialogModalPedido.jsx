@@ -33,12 +33,17 @@ import {
   getSiguienteNumeroOrdenThunk // 🔥 NUEVO
 } from "../../store/proveedoresOrdenesStore/proveedoresOrdenesThunks";
 
+/**
+ * 1. En Contizacion
+ * 2. Pagada
+ * 3. En Tránsito
+ * 4. Inventariada
+ */
 const ESTADO_OPCIONES = [
-  { value: 'pendiente', label: 'Pendiente' },
-  { value: 'confirmada', label: 'Confirmada' },
-  { value: 'en_transito', label: 'En Tránsito' },
-  { value: 'recibida', label: 'Recibida' },
-  { value: 'cancelada', label: 'Cancelada' },
+  { value: 'pendiente',    label: 'En Cotización' },
+  { value: 'confirmada',   label: 'Pagada' },
+  { value: 'en_transito',  label: 'En Tránsito' },
+  { value: 'recibida',     label: 'Inventariada' },
 ];
 
 export const FormDialogModalPedido = () => {

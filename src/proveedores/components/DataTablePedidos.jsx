@@ -33,6 +33,26 @@ import { getAllOrdenesThunk } from "../../store/proveedoresOrdenesStore/proveedo
 import { showAlert } from "../../store/globalStore/globalStore";
 import { URL } from "../../constants/constantGlogal";
 
+  const estadoStyles = {
+    "En Cotización": {
+      bg: "#f8d7da",
+      color: "#721c24",
+    },
+    "Pagada": {
+      bg: "#d1ecf1",
+      color: "#0c5460",
+    },
+    "En Tránsito": {
+      bg: "#fff3cd",
+      color: "#856404",
+    },
+    "Inventariada": {
+      bg: "#d4edda",
+      color: "#155724",
+    },
+  };
+
+  
 export function DataTablePedidos() {
 
   const { ordenes } = useSelector((state) => state.proveedoresOrdenesStore);
@@ -494,22 +514,14 @@ function SubTablaOrdenes({ row, token, dispatch }) {
                           }).format(orden.total)}
                         </TableCell>
                         <TableCell sx={{ fontSize: "14px" }}>
-                          <span
+                           <span
                             style={{
                               padding: "4px 12px",
                               borderRadius: "16px",
                               fontSize: "12px",
                               fontWeight: "bold",
-                              backgroundColor:
-                                orden.estado === "Entregado" ? "#d4edda" :
-                                orden.estado === "En tránsito" ? "#fff3cd" :
-                                orden.estado === "Confirmada" ? "#d1ecf1" :
-                                orden.estado === "Pendiente" ? "#f8d7da" : "#e2e3e5",
-                              color:
-                                orden.estado === "Entregado" ? "#155724" :
-                                orden.estado === "En tránsito" ? "#856404" :
-                                orden.estado === "Confirmada" ? "#0c5460" :
-                                orden.estado === "Pendiente" ? "#721c24" : "#383d41",
+                              backgroundColor: estadoStyles[orden.estado]?.bg || "#e2e3e5",
+                              color: estadoStyles[orden.estado]?.color || "#383d41",
                             }}
                           >
                             {orden.estado}

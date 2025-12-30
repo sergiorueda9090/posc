@@ -35,6 +35,7 @@ export const posStore = createSlice({
   initialState: {
     id                     : null,
     currentCart            : [],
+    codigo_venta           : '',
     cliente_id             : { id: null,
                                name: 'Público General',
                                email: '',
@@ -81,6 +82,9 @@ export const posStore = createSlice({
     listVentasStore:(state, action) => {
       state.ventas = action.payload.ventas;
     },
+    getCodigoVentaStore:(state, action) => {
+      state.codigo_venta = action.payload.codigo_venta;
+    },
     resetFormularioStore:(state) => {
       state.id                     = null;
       state.currentCart            = [];
@@ -91,6 +95,7 @@ export const posStore = createSlice({
       state.total                  = 0;
       state.subTotal               = 0;
       state.creado_por_username    = '';
+      state.codigo_venta           = '';
       state.totals                 = {
         subtotal              : 0,
         impuesto              : 0,
@@ -153,4 +158,4 @@ export const posStore = createSlice({
 
 // Action creators are generated for each case reducer function
 export const { showStore, listStore, listVentasStore, resetFormularioStore, handleFormStore,
-              addToCart, updateQuantity, removeItem } = posStore.actions;
+              addToCart, updateQuantity, removeItem, getCodigoVentaStore } = posStore.actions;

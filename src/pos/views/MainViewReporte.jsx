@@ -15,6 +15,8 @@ import {
 
 import { useDispatch, useSelector } from "react-redux";
 import { getAllThunks } from "../../store/posStore/reporteThunks.js";
+import { getCodigoVentaThunk } from "../../store/posStore/posThunks.js";
+
 import { DateRange } from "../components/DateRange.jsx";
 
 import { ChartsSection } from "../components/ChartsSection.jsx";
@@ -25,10 +27,12 @@ import { TablaReportes } from "../components/TablaReportes.jsx";
 const MainViewReporte = () => {
   const dispatch = useDispatch();
   const { resumen_general } = useSelector((state) => state.reporteStore);
+  const { codigo_venta }    = useSelector((state) => state.posStore);
   const [comparar, setComparar] = useState(false);
 
   useEffect(() => {
     dispatch(getAllThunks());
+    dispatch( getCodigoVentaThunk() );
   }, [dispatch]);
 
   const tieneDatos =
