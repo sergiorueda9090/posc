@@ -2,6 +2,7 @@ import axios from "axios";
 import { showBackDropStore, hideBackDropStore,openModalShared, closeModalShared, showAlert } from "../globalStore/globalStore.js";
 import { showStore, listStore, listVentasStore, resetFormularioStore, handleFormStore, 
          addToCart, updateQuantity, removeItem, getCodigoVentaStore } from "./posStore.js";
+import { getAllThunks as getAllThunksProductos } from "../productoStore/productoThunks.js";
 
 import { URL } from "../../constants/constantGlogal.js";
 const namespace_api      = "/api/ventas/";
@@ -16,12 +17,59 @@ const bycategoria_endpoint = "bycategoria/";
 
 export const addToCartThunks = (product) => {
     return async (dispatch, getState) => {
+        const { posStore } = getState();
+        const cantidadMaxima = product.cantidadMaxima || product.cantidad || 0;
+
+        // Buscar si el producto ya existe en el carrito
+        const existingItem = posStore.currentCart.find(
+            item => item.nombre === product.nombre && !item.isDiscount
+        );
+
+        // 🔥 Validar antes de agregar
+        if (existingItem) {
+            // Si ya existe, verificar que no se exceda el máximo
+            if (existingItem.quantity + 1 > cantidadMaxima) {
+                await dispatch(showAlert({
+                    type: "warning",
+                    title: "⚠️ Cantidad máxima alcanzada",
+                    text: `No puedes agregar más unidades de "${product.nombre}". Stock disponible: ${cantidadMaxima} unidades.`
+                }));
+                return;
+            }
+        } else {
+            // Si no existe, verificar que haya stock
+            if (cantidadMaxima <= 0) {
+                await dispatch(showAlert({
+                    type: "error",
+                    title: "❌ Sin stock disponible",
+                    text: `El producto "${product.nombre}" no tiene unidades disponibles.`
+                }));
+                return;
+            }
+        }
+
+        // Si pasa las validaciones, agregar al carrito
         await dispatch(addToCart(product));
     }
 };
 
 export const updateQuantityThunks = (item, delta) => {
     return async (dispatch, getState) => {
+        const { posStore } = getState();
+        const cantidadMaxima = item.cantidadMaxima || item.cantidad || Infinity;
+        const newQuantity = item.quantity + delta;
+
+        // 🔥 Validar si se intenta incrementar más allá del máximo
+        if (delta > 0 && newQuantity > cantidadMaxima) {
+            await dispatch(showAlert({
+                type: "warning",
+                title: "⚠️ Cantidad máxima alcanzada",
+                text: `No puedes agregar más unidades de "${item.nombre}". Stock disponible: ${cantidadMaxima} unidades.`
+            }));
+            return;
+        }
+
+        // Si pasa la validación, actualizar cantidad
         await dispatch(updateQuantity({item, delta}));
     }
 };
@@ -48,7 +96,8 @@ export const createVentaThunk = (ventaData) => {
         const data = new FormData();
 
         data.append("cliente_id"    ,posStore.cliente_id.id || '');
-        data.append("metodo_pago"   ,'Efectivo' );
+        data.append("tarjeta_id"    ,posStore.tarjeta_id || '');
+        data.append("metodo_pago"   ,posStore.metodo_pago);
         data.append("recibido"      ,posStore.efectivo_recibido);
         data.append("cambio"        ,(parseFloat(posStore.efectivo_recibido) - posStore.totals.total));
         data.append("subtotal"      ,posStore.totals.subtotalAfterDiscount);
@@ -86,7 +135,7 @@ export const createVentaThunk = (ventaData) => {
                                ¡Gracias por su compra! 🛍️`,
                     })
                 );
-
+                await dispatch(getAllThunksProductos());
                 await dispatch(closeModalShared());
                 await dispatch(hideBackDropStore());
             } else {
@@ -432,7 +481,7 @@ export const updateThunks = (userData) => {
                     })
                 );
 
-                await dispatch( getAllThunks() );
+               await dispatch( getAllThunks() );
 
                 await dispatch( closeModalShared() );
 

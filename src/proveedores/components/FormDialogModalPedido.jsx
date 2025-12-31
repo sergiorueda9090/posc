@@ -32,6 +32,7 @@ import {
   createOrdenThunk,
   getSiguienteNumeroOrdenThunk // 🔥 NUEVO
 } from "../../store/proveedoresOrdenesStore/proveedoresOrdenesThunks";
+import { getAllThunks as getAllTarjetas } from "../../store/tarjetasBancariasStore/tarjetasBancariasStoreThunks";
 
 /**
  * 1. En Contizacion
@@ -58,6 +59,7 @@ export const FormDialogModalPedido = () => {
     idOrden, 
     proveedor_id, 
     producto_id,
+    tarjeta_id,
     producto_nombre,
     precio_compra,
     numero_orden, 
@@ -66,6 +68,8 @@ export const FormDialogModalPedido = () => {
     cantidad, 
     detalles
   } = useSelector((state) => state.proveedoresOrdenesStore);
+
+  const {tarjetas} = useSelector((state) => state.tarjetasBancariasStore);
 
   const proveedoresResults = proveedores?.results && Array.isArray(proveedores.results) && proveedores.results.length > 0
     ? proveedores.results.map(prov => ({
@@ -93,6 +97,7 @@ export const FormDialogModalPedido = () => {
     if (openModalPedido && !idOrden) {
       dispatch(resetFormularioThunk());
       dispatch(getSiguienteNumeroOrdenThunk()); // 🔥 Obtener número consecutivo
+      dispatch(getAllTarjetas({ page: 1, pageSize: 100, search: "" })); // Cargar tarjetas bancarias
     }
   }, [openModalPedido, idOrden, dispatch]);
 
@@ -109,6 +114,14 @@ export const FormDialogModalPedido = () => {
       value: name === "cantidad" ? parseInt(value) || 1 : value,
     }));
   };
+
+  const handleChangeTarjeta  = (event) => {
+    const { name, value } = event.target;
+    dispatch(handleFormStoreThunk({
+      name: name,
+      value: value,
+    }));
+  }
 
   const handleProveedorChange = (event, newValue) => {
     const proveedorId = newValue ? newValue.value : null;
@@ -274,6 +287,15 @@ export const FormDialogModalPedido = () => {
       return;
     }
 
+    if(!tarjeta_id) {
+      dispatch(showAlert({
+        type: "error",
+        title: "Error",
+        text: "Debe seleccionar una tarjeta bancaria",
+      }));
+      return;
+    }
+
     if (!numero_orden || numero_orden.trim() === "") {
       dispatch(showAlert({
         type: "error",
@@ -294,6 +316,7 @@ export const FormDialogModalPedido = () => {
 
     const data = {
       proveedor_id: proveedor_id,
+      tarjeta_id: tarjeta_id,
       numero_orden: numero_orden,
       estado: estado || 'pendiente',
       notas: notas || '',
@@ -363,7 +386,7 @@ export const FormDialogModalPedido = () => {
             </Grid>
 
             {/* Estado */}
-            <Grid item xs={12}>
+            <Grid item xs={6}>
               <TextField
                 fullWidth
                 select
@@ -381,6 +404,26 @@ export const FormDialogModalPedido = () => {
                 ))}
               </TextField>
             </Grid>
+
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                select
+                name="tarjeta_id"
+                label="Tarjeta a usar *"
+                variant="outlined"
+                size="small"
+                value={tarjeta_id || ''}
+                onChange={handleChangeTarjeta}
+              >
+                {tarjetas.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.nombre}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
 
             {/* Sección de agregar productos */}
             <Grid item xs={12}>

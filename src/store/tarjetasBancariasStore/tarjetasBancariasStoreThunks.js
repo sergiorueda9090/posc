@@ -42,7 +42,8 @@ export const getAllThunks = ({page = 1,  pageSize = 10, search = "", start_date 
 
       if (response.status === 200) {
         const tarjetas = response.data;
-        await dispatch(listStore({ tarjetas }));
+        const tarjetasResults = tarjetas.results || [];
+        await dispatch(listStore({ 'tarjetas': tarjetasResults }));
       } else {
         console.error("⚠️ Error al obtener categorias:", response);
       }

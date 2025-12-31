@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, use } from 'react';
-import { Container, Grid, Box, Typography, Button} from '@mui/material';
+import { Container, Grid, Box, Typography, Button, FormControl, Select, MenuItem, InputLabel, TextField } from '@mui/material';
 
 import {  CatalogoProductos }   from '../components/CatalogoProductos.jsx';
 import {  CartSummary       }   from '../components/CartSummary.jsx';
@@ -16,21 +16,47 @@ import { useSelector, useDispatch } from 'react-redux';
 import { addToCartThunks, resetPosStoreThunk, handleFormStoreThunk, createVentaThunk, getVentasThunk } from '../../store/posStore/posThunks.js';
 import { showAlert } from '../../store/globalStore/globalStore.js';
 import { getAllThunks as getAllThunksClientes } from '../../store/clienteStore/clienteThunks.js';
+import { getAllThunks as getAllTarjetas } from "../../store/tarjetasBancariasStore/tarjetasBancariasStoreThunks";
 import { getCodigoVentaThunk } from "../../store/posStore/posThunks.js";
 import FooterPOS from '../components/FooterPOS.jsx';
 
+// 💳 Métodos de pago comunes en Colombia
+const METODOS_PAGO = [
+    { value: 'Efectivo', label: '💵 Efectivo' },
+    { value: 'Tarjeta Débito', label: '💳 Tarjeta de Débito' },
+    { value: 'Tarjeta Crédito', label: '💳 Tarjeta de Crédito' },
+    { value: 'Daviplata', label: '📱 Daviplata' },
+    { value: 'Nequi', label: '📱 Nequi' },
+    { value: 'Bancolombia', label: '🏦 Bancolombia a la Mano' },
+    { value: 'Transferencia', label: '🔄 Transferencia Bancaria' },
+];
+
+
 const MainView = () => {
-    const { currentCart, efectivo_recibido, totals } = useSelector((state) => state.posStore);
+    const { currentCart, efectivo_recibido, totals, tarjeta_id, metodo_pago } = useSelector((state) => state.posStore);
     const { codigo_venta }    = useSelector((state) => state.posStore);
+    const {tarjetas} = useSelector((state) => state.tarjetasBancariasStore);
     const dispatch = useDispatch();
 
     const [currentClient, setCurrentClient]         = useState(MOCK_CLIENTS_DB[0]);
     const [isClientModalOpen, setIsClientModalOpen] = useState(false);
     const [isCardModalOpen, setIsCardModalOpen]     = useState(false);
+    const [metodoPago, setMetodoPago]               = useState('Efectivo');
 
     useEffect(() => {
         dispatch( getCodigoVentaThunk() );
+        dispatch(getAllTarjetas({ page: 1, pageSize: 100, search: "" })); // Cargar tarjetas bancarias
     }, [codigo_venta, dispatch]);
+
+    const handleChangeTarjeta  = (event) => {
+        const { value } = event.target;
+        dispatch(handleFormStoreThunk({name: 'tarjeta_id', value: value}));
+    }
+
+    const handleMetodoPagoChange = (event) => {
+        const { value } = event.target;
+        dispatch(handleFormStoreThunk({name: 'metodo_pago', value: value}));
+    }
 
     const handleSetIsClientModalOpen = (isOpen) => {
         dispatch(getAllThunksClientes());
@@ -111,6 +137,7 @@ const MainView = () => {
                     <p><strong>ID Venta:</strong> ${codigo_venta}</p>
                     <p><strong>Cliente:</strong> ${saleData.client.name} <span style="color:#666;">(ID: ${saleData.client.id})</span></p>
                     <p><strong>Método de pago:</strong> ${saleData.method}</p>
+                    ${paymentMethod !== 'Efectivo' ? `<p><strong>Cuenta destino:</strong> ${metodo_pago}</p>` : ''}
                 </div>
 
                 <hr style="border: 1px solid #ddd; margin: 15px 0;">
@@ -178,8 +205,8 @@ const MainView = () => {
     };
 
 
-    const handleCashPayment = () => {
-        finalizeSale('Efectivo');
+    const handleFinalizarVenta = () => {
+        finalizeSale(metodoPago);
     }
 
     const handleCardPaymentFinalize = () => finalizeSale('Tarjeta');
@@ -216,35 +243,74 @@ const MainView = () => {
                         <Typography variant="h5" sx={{ mb: 2 }}>
                             Opciones de Pago 💳
                         </Typography>
+
+                        {/* 🔥 Select de Método de Pago */}
+                        <FormControl fullWidth sx={{ mb: 2 }}>
+                            <InputLabel id="metodo-pago-label">Método de Pago</InputLabel>
+                            <Select
+                                labelId="metodo-pago-label"
+                                value={metodo_pago || 'Efectivo'}
+                                label="Método de Pago"
+                                onChange={(e) => handleMetodoPagoChange(e)}
+                                sx={{
+                                    bgcolor: 'white',
+                                    '& .MuiSelect-select': {
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        py: 1.5,
+                                    }
+                                }}
+                            >
+                                {METODOS_PAGO.map((metodo) => (
+                                    <MenuItem key={metodo.value} value={metodo.value}>
+                                        {metodo.label}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+
+                        {/* 🔥 Select de Cuenta Bancaria (solo si no es efectivo) */}
                         
+                        <FormControl fullWidth sx={{ mb: 2 }}>
+                            <TextField
+                                fullWidth
+                                select
+                                name="tarjeta_id"
+                                label="🏦 Tarjeta a usar *"
+                                variant="outlined"
+                                size="small"
+                                value={tarjeta_id || ''}
+                                onChange={handleChangeTarjeta}
+                                >
+                                {tarjetas.map((option) => (
+                                    <MenuItem key={option.id} value={option.id}>
+                                     🏦 {option.nombre}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </FormControl>
+                      
+
                         {/* Botones de Finalización */}
-                        <Button 
-                            variant="contained" 
-                            color="success" 
-                            size="large" 
-                            fullWidth 
-                            onClick={handleCashPayment} 
-                            disabled={currentCart.length === 0 || totals.total > parseFloat(efectivo_recibido)}
+                        <Button
+                            variant="contained"
+                            color="success"
+                            size="large"
+                            fullWidth
+                            onClick={handleFinalizarVenta}
+                            disabled={
+                                currentCart.length === 0 ||
+                                (metodoPago === 'Efectivo' && totals.total > parseFloat(efectivo_recibido))
+                            }
                             sx={{ mb: 1, height: 60 }}
                         >
-                            Finalizar Venta (Efectivo)
+                            Finalizar Venta
                         </Button>
-                        {/*<Button 
-                            variant="contained" 
-                            color="primary" 
-                            size="large" 
-                            fullWidth 
-                            onClick={() => setIsCardModalOpen(true)} 
-                            disabled={currentCart.length === 0}
-                            sx={{ mb: 3, height: 60 }}
-                        >
-                            Pagar con Tarjeta
-                        </Button>*/}
-                        <Button 
-                            variant="outlined" 
-                            color="error" 
-                            size="small" 
-                            fullWidth 
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            fullWidth
                             onClick={handleAnularVenta}
                             sx={{ mb: 3 }}
                         >

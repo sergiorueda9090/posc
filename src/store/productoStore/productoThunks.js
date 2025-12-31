@@ -92,8 +92,11 @@ export const createThunks = (userData) => {
                 );
 
                 await dispatch(getAllThunks());
+
                 await dispatch(closeModalShared());
+
                 await dispatch(hideBackDropStore());
+                
             } else {
                 
                 await dispatch(

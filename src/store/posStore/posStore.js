@@ -34,6 +34,8 @@ export const posStore = createSlice({
   name: 'posStore',
   initialState: {
     id                     : null,
+    tarjeta_id             : null,
+    metodo_pago            : 'Efectivo',
     currentCart            : [],
     codigo_venta           : '',
     cliente_id             : { id: null,
@@ -87,6 +89,8 @@ export const posStore = createSlice({
     },
     resetFormularioStore:(state) => {
       state.id                     = null;
+      state.tarjeta_id             = null;
+      state.metodo_pago            = 'Efectivo';
       state.currentCart            = [];
       state.cliente_id             = { id: null, name: 'Público General', email: '', telefono: '', direccion: '' };
       state.efectivo_recibido      = '0.00';
@@ -115,37 +119,55 @@ export const posStore = createSlice({
     },
     addToCart:(state, action) => {
       const productToAdd = action.payload;
+      const cantidadMaxima = productToAdd.cantidadMaxima || productToAdd.cantidad || 0;
+
       const existingItem = state.currentCart.find(item => item.nombre === productToAdd.nombre && !item.isDiscount);
+
       if (existingItem) {
+        // 🔥 Validar que no se exceda la cantidad máxima disponible
+        if (existingItem.quantity + 1 > cantidadMaxima) {
+          // No incrementar, se ha alcanzado el límite
+          return;
+        }
         existingItem.quantity += 1;
       } else {
+        // 🔥 Validar que haya stock disponible antes de agregar
+        if (cantidadMaxima <= 0) {
+          return;
+        }
         state.currentCart.push({ ...productToAdd, quantity: 1 });
       }
       state.currentCart = state.currentCart.filter(item => item.quantity > 0);
 
       state.totals = calculateTotals(state.currentCart);
-
-
     },
     updateQuantity:(state, action) => {
-      
+
       const { item, delta } = action.payload;
 
       const itemToUpdate = state.currentCart.find(itemCart => itemCart.id == item.id);
 
       if (itemToUpdate) {
-    
-        itemToUpdate.quantity += delta;
-       
+        const cantidadMaxima = itemToUpdate.cantidadMaxima || itemToUpdate.cantidad || Infinity;
+        const newQuantity = itemToUpdate.quantity + delta;
+
+        // 🔥 Validar que no se exceda la cantidad máxima disponible
+        if (newQuantity > cantidadMaxima) {
+          // No actualizar si excede el máximo
+          return;
+        }
+
+        itemToUpdate.quantity = newQuantity;
+
         if (itemToUpdate.quantity < 1) {
           itemToUpdate.quantity = 1; // Evitar cantidades negativas o cero
         }
-    
+
       }
-  
+
       state.currentCart = state.currentCart.filter(i => i.quantity > 0);
       state.totals = calculateTotals(state.currentCart);
-    
+
     },
     removeItem:(state, action) => {
       const itemToRemove = action.payload;

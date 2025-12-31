@@ -24,7 +24,11 @@ export const CatalogoProductos = ({ addToCart }) => {
   // 🔥 Función para manejar el click
   const handleProductClick = (product) => {
     if (product.cantidad > 0) {
-      addToCart(product);
+      // Pasar el producto con su cantidad máxima disponible explícita
+      addToCart({
+        ...product,
+        cantidadMaxima: product.cantidad // 🔥 Cantidad máxima disponible en inventario
+      });
     }
   };
 

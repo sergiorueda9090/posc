@@ -27,30 +27,52 @@ import SearchIcon from "@mui/icons-material/Search";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import DownloadIcon from "@mui/icons-material/Download";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
 
 import { useSelector, useDispatch } from "react-redux";
 import { getAllOrdenesThunk } from "../../store/proveedoresOrdenesStore/proveedoresOrdenesThunks";
 import { showAlert } from "../../store/globalStore/globalStore";
 import { URL } from "../../constants/constantGlogal";
 
-  const estadoStyles = {
-    "En Cotización": {
-      bg: "#f8d7da",
-      color: "#721c24",
-    },
-    "Pagada": {
-      bg: "#d1ecf1",
-      color: "#0c5460",
-    },
-    "En Tránsito": {
-      bg: "#fff3cd",
-      color: "#856404",
-    },
-    "Inventariada": {
-      bg: "#d4edda",
-      color: "#155724",
-    },
-  };
+const ESTADO_OPCIONES = [
+  { value: 'pendiente',   label: 'En Cotización' },
+  { value: 'confirmada',  label: 'Pagada' },
+  { value: 'en_transito', label: 'En Tránsito' },
+  { value: 'recibida',    label: 'Inventariada' },
+];
+
+// Función helper para convertir value a label
+const getEstadoLabel = (value) => {
+  const opcion = ESTADO_OPCIONES.find(op => op.value === value);
+  return opcion ? opcion.label : value;
+};
+
+// Función helper para convertir label a value
+const getEstadoValue = (label) => {
+  const opcion = ESTADO_OPCIONES.find(op => op.label === label);
+  return opcion ? opcion.value : label;
+};
+
+const estadoStyles = {
+  "En Cotización": {
+    bg: "#f8d7da",
+    color: "#721c24",
+  },
+  "Pagada": {
+    bg: "#d1ecf1",
+    color: "#0c5460",
+  },
+  "En Tránsito": {
+    bg: "#fff3cd",
+    color: "#856404",
+  },
+  "Inventariada": {
+    bg: "#d4edda",
+    color: "#155724",
+  },
+};
 
   
 export function DataTablePedidos() {
@@ -283,6 +305,8 @@ function SubTablaOrdenes({ row, token, dispatch }) {
   const [searchOrd, setSearchOrd] = useState("");
   const [expandedOrden, setExpandedOrden] = useState(null);
   const [descargando, setDescargando] = useState(null);
+  const [actualizandoEstado, setActualizandoEstado] = useState({});
+  const [estadosLocales, setEstadosLocales] = useState({});
 
   const filteredOrd = useMemo(() => {
     if (!row.ordenesPedido || row.ordenesPedido.length === 0) return [];
@@ -323,7 +347,7 @@ function SubTablaOrdenes({ row, token, dispatch }) {
   // 🔥 FUNCIÓN PARA DESCARGAR PDF
   const handleDescargarPDF = async (ordenId, numeroOrden) => {
     setDescargando(ordenId);
-    
+
     try {
       const response = await fetch(`${URL}/api/suppliers/ordenes/${ordenId}/pdf/`, {
         method: 'GET',
@@ -338,7 +362,7 @@ function SubTablaOrdenes({ row, token, dispatch }) {
 
       // Convertir respuesta a blob
       const blob = await response.blob();
-      
+
       // Crear URL temporal para descargar
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -346,17 +370,17 @@ function SubTablaOrdenes({ row, token, dispatch }) {
       link.download = `Orden_${numeroOrden}.pdf`;
       document.body.appendChild(link);
       link.click();
-      
+
       // Limpiar
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       dispatch(showAlert({
         type: "success",
         title: "PDF Descargado",
         text: `La orden ${numeroOrden} se ha descargado correctamente`,
       }));
-      
+
     } catch (error) {
       console.error("Error al descargar PDF:", error);
       dispatch(showAlert({
@@ -366,6 +390,94 @@ function SubTablaOrdenes({ row, token, dispatch }) {
       }));
     } finally {
       setDescargando(null);
+    }
+  };
+
+  // 🔥 FUNCIÓN PARA ACTUALIZAR ESTADO
+  const handleCambiarEstado = async (ordenId, estadoActualLabel, nuevoEstadoValue) => {
+    // Evitar doble envío
+    if (actualizandoEstado[ordenId]) {
+      return;
+    }
+
+    // Validar que el estado esté en las opciones permitidas
+    const estadoValido = ESTADO_OPCIONES.find(op => op.value === nuevoEstadoValue);
+    if (!estadoValido) {
+      dispatch(showAlert({
+        type: "error",
+        title: "Error",
+        text: "Estado inválido seleccionado",
+      }));
+      return;
+    }
+
+    const nuevoEstadoLabel = estadoValido.label;
+
+    // Mostrar confirmación
+    const confirmacion = window.confirm(
+      `¿Confirmas cambiar el estado de '${estadoActualLabel}' a '${nuevoEstadoLabel}'?`
+    );
+
+    if (!confirmacion) {
+      // Revertir el select al valor anterior
+      setEstadosLocales(prev => ({
+        ...prev,
+        [ordenId]: getEstadoValue(estadoActualLabel)
+      }));
+      return;
+    }
+
+    // Marcar como actualizando
+    setActualizandoEstado(prev => ({ ...prev, [ordenId]: true }));
+
+    try {
+      const response = await fetch(`${URL}/api/suppliers/ordenes/${ordenId}/update-estado/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ estado: nuevoEstadoValue }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al actualizar el estado');
+      }
+
+      const data = await response.json();
+
+      // Actualizar estado local
+      setEstadosLocales(prev => ({
+        ...prev,
+        [ordenId]: data.estado
+      }));
+
+      // Recargar datos desde el servidor
+      dispatch(getAllOrdenesThunk());
+
+      dispatch(showAlert({
+        type: "success",
+        title: "Estado Actualizado",
+        text: `El estado se cambió exitosamente a '${nuevoEstadoLabel}'`,
+      }));
+
+    } catch (error) {
+      console.error("Error al actualizar estado:", error);
+
+      // Revertir al estado anterior
+      setEstadosLocales(prev => ({
+        ...prev,
+        [ordenId]: getEstadoValue(estadoActualLabel)
+      }));
+
+      dispatch(showAlert({
+        type: "error",
+        title: "Error",
+        text: error.message || "No se pudo actualizar el estado. Intente nuevamente.",
+      }));
+    } finally {
+      setActualizandoEstado(prev => ({ ...prev, [ordenId]: false }));
     }
   };
 
@@ -444,6 +556,7 @@ function SubTablaOrdenes({ row, token, dispatch }) {
                 <TableCell><strong># Items</strong></TableCell>
                 <TableCell><strong>Total</strong></TableCell>
                 <TableCell><strong>Estado</strong></TableCell>
+                <TableCell><strong>Tarjeta</strong></TableCell>
                 <TableCell align="center"><strong>PDF</strong></TableCell>
               </TableRow>
             </TableHead>
@@ -514,19 +627,53 @@ function SubTablaOrdenes({ row, token, dispatch }) {
                           }).format(orden.total)}
                         </TableCell>
                         <TableCell sx={{ fontSize: "14px" }}>
-                           <span
-                            style={{
-                              padding: "4px 12px",
-                              borderRadius: "16px",
-                              fontSize: "12px",
-                              fontWeight: "bold",
-                              backgroundColor: estadoStyles[orden.estado]?.bg || "#e2e3e5",
-                              color: estadoStyles[orden.estado]?.color || "#383d41",
-                            }}
-                          >
-                            {orden.estado}
-                          </span>
+                          <FormControl size="small" fullWidth>
+                            <Select 
+                              value={estadosLocales[orden.id] || getEstadoValue(orden.estado)} 
+                              onChange={(e) => handleCambiarEstado(orden.id, orden.estado, e.target.value)} 
+                              disabled={
+                                actualizandoEstado[orden.id] || 
+                                getEstadoValue(orden.estado) === 'recibida' ||
+                                (estadosLocales[orden.id] && estadosLocales[orden.id] === 'recibida')
+                              }
+                              sx={{ 
+                                fontSize: "12px", 
+                                fontWeight: "bold", 
+                                backgroundColor: estadoStyles[getEstadoLabel(estadosLocales[orden.id] || getEstadoValue(orden.estado))]?.bg || "#e2e3e5", 
+                                color: estadoStyles[getEstadoLabel(estadosLocales[orden.id] || getEstadoValue(orden.estado))]?.color || "#383d41", 
+                                "& .MuiOutlinedInput-notchedOutline": { 
+                                  border: "none", 
+                                }, 
+                                "&:hover .MuiOutlinedInput-notchedOutline": { 
+                                  border: "1px solid #ccc", 
+                                }, 
+                                "&.Mui-focused .MuiOutlinedInput-notchedOutline": { 
+                                  border: "1px solid #F7C548", 
+                                },
+                                // Opcional: cambiar el cursor cuando está deshabilitado
+                                "&.Mui-disabled": {
+                                  cursor: "not-allowed",
+                                  opacity: 0.7
+                                }
+                              }} 
+                            > 
+                              {ESTADO_OPCIONES.map((opcion) => ( 
+                                <MenuItem key={opcion.value} value={opcion.value}> 
+                                  {opcion.label} 
+                                </MenuItem> 
+                              ))} 
+                            </Select>
+                          </FormControl>
+                          {actualizandoEstado[orden.id] && (
+                            <CircularProgress size={16} sx={{ ml: 1, verticalAlign: "middle" }} />
+                          )}
                         </TableCell>
+
+                        <TableCell align="center">
+                          {orden.tarjeta_bancaria || 'N/A'}
+                        </TableCell>
+
+
                         <TableCell align="center">
                           {/* 🔥 BOTÓN DE DESCARGA PDF */}
                           <IconButton
@@ -542,7 +689,11 @@ function SubTablaOrdenes({ row, token, dispatch }) {
                             )}
                           </IconButton>
                         </TableCell>
+
+
                       </TableRow>
+
+
 
                       {/* FILA EXPANDIDA CON PRODUCTOS */}
                       <TableRow>

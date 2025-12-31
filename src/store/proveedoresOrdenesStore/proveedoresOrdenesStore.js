@@ -6,6 +6,7 @@ export const proveedoresOrdenesStore = createSlice({
     idOrden          : null,
     proveedor_id     : null,
     producto_id      : null,
+    tarjeta_id       : null,
     precio_compra    : null,
     producto_nombre  :  '',
     numero_orden     : '',
@@ -19,9 +20,10 @@ export const proveedoresOrdenesStore = createSlice({
   },
   reducers: {
     showStore:(state,action) => {
-      const { idOrden, proveedor_id, numero_orden, estado, notas, detalles, creado_por_username, cantidad } = action.payload;
+      const { idOrden, proveedor_id, tarjeta_id, numero_orden, estado, notas, detalles, creado_por_username, cantidad } = action.payload;
       state.idOrden           = idOrden;
       state.proveedor_id      = proveedor_id;
+      state.tarjeta_id        = tarjeta_id;
       state.numero_orden     = numero_orden;
       state.estado           = estado;
       state.cantidad         = cantidad;
@@ -41,6 +43,7 @@ export const proveedoresOrdenesStore = createSlice({
       state.proveedor_id      = null;
       state.producto_id      = null;
       state.precio_compra     = null;
+      state.tarjeta_id       = null;
       state.producto_nombre   = '';
       state.numero_orden      = '';
       state.estado            = 'pendiente';
