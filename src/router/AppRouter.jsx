@@ -17,6 +17,7 @@ import { MainPage as CargosNoRegistrados }   from '../cargosNoRegistrados/pages/
 import { MainPage as AjusteDeSaldo }   from '../ajusteDeSaldo/pages/MainPage';
 import { MainPage as UtilidadOcasional } from '../utilidadOcasional/pages/MainPage';
 import { MainPage as Proveedores } from '../proveedores/pages/MainPage';
+import { MainPage as Combos } from '../combos/pages/MainPage';
 
 export const AppRouter = () => {
  
@@ -41,6 +42,7 @@ export const AppRouter = () => {
                 <Route path="/ajustedesaldo"   element={ <AjusteDeSaldo /> } />
                 <Route path="/utilidadocasional"   element={ <UtilidadOcasional /> } />
                 <Route path="/proveedores"   element={ <Proveedores /> } />
+                <Route path="/combos"   element={ <Combos /> } />
 
               </>
               ) : (

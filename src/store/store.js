@@ -19,6 +19,7 @@ import { ajusteDeSaldoStore }  from './ajusteDeSaldoStore/ajusteDeSaldoStore';
 import { utilidadOcasionalStore } from './utilidadOcasionalStore/utilidadOcasionalStore';
 import { proveedoresStore } from './proveedoresStore/proveedoresStore';
 import { proveedoresOrdenesStore } from './proveedoresOrdenesStore/proveedoresOrdenesStore';
+import { comboStore } from './comboStore/comboStore';
 
 export const store = configureStore({
   reducer: {
@@ -42,5 +43,6 @@ export const store = configureStore({
     utilidadOcasionalStore: utilidadOcasionalStore.reducer,
     proveedoresStore      : proveedoresStore.reducer,
     proveedoresOrdenesStore : proveedoresOrdenesStore.reducer,
+    comboStore            : comboStore.reducer,
   }
 })

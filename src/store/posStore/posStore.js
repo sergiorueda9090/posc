@@ -2,10 +2,13 @@ import { createSlice } from '@reduxjs/toolkit'
 import { TAX_RATE } from '../../pos/constants/TaxRage.js';
 
 const calculateTotals = (cart) => {
-  // 1. Subtotal de productos (sin descuentos)
+  // 1. Subtotal de productos y combos (sin descuentos)
   const taxableSubtotal = cart
     .filter(item => !item.isDiscount)
-    .reduce((sum, item) => sum + (item.precio_final * item.quantity), 0);
+    .reduce((sum, item) => {
+      const precio = item.isCombo ? item.precio_total : item.precio_final;
+      return sum + (precio * item.quantity);
+    }, 0);
 
   // 2. Suma total de descuentos
   const discountAmount = cart
@@ -120,25 +123,54 @@ export const posStore = createSlice({
     addToCart:(state, action) => {
       const productToAdd = action.payload;
       const cantidadMaxima = productToAdd.cantidadMaxima || productToAdd.cantidad || 0;
+      const isCombo = productToAdd.isCombo || false;
 
-      const existingItem = state.currentCart.find(item => item.nombre === productToAdd.nombre && !item.isDiscount);
+      if (isCombo) {
+        // Para combos, agregar como item único
+        const existingCombo = state.currentCart.find(
+          item => item.id === productToAdd.id && item.isCombo
+        );
 
-      if (existingItem) {
-        // 🔥 Validar que no se exceda la cantidad máxima disponible
-        if (existingItem.quantity + 1 > cantidadMaxima) {
-          // No incrementar, se ha alcanzado el límite
-          return;
+        if (existingCombo) {
+          // Validar cantidad máxima
+          if (existingCombo.quantity + 1 > cantidadMaxima) {
+            return;
+          }
+          existingCombo.quantity += 1;
+        } else {
+          // Validar stock antes de agregar
+          if (cantidadMaxima <= 0) {
+            return;
+          }
+          state.currentCart.push({
+            ...productToAdd,
+            quantity: 1,
+            precio_final: productToAdd.precio_total,  // Usar precio_total del combo
+          });
         }
-        existingItem.quantity += 1;
       } else {
-        // 🔥 Validar que haya stock disponible antes de agregar
-        if (cantidadMaxima <= 0) {
-          return;
-        }
-        state.currentCart.push({ ...productToAdd, quantity: 1 });
-      }
-      state.currentCart = state.currentCart.filter(item => item.quantity > 0);
+        // Lógica existente para productos individuales
+        const existingItem = state.currentCart.find(
+          item => item.nombre === productToAdd.nombre && !item.isDiscount && !item.isCombo
+        );
 
+        if (existingItem) {
+          // 🔥 Validar que no se exceda la cantidad máxima disponible
+          if (existingItem.quantity + 1 > cantidadMaxima) {
+            // No incrementar, se ha alcanzado el límite
+            return;
+          }
+          existingItem.quantity += 1;
+        } else {
+          // 🔥 Validar que haya stock disponible antes de agregar
+          if (cantidadMaxima <= 0) {
+            return;
+          }
+          state.currentCart.push({ ...productToAdd, quantity: 1 });
+        }
+      }
+
+      state.currentCart = state.currentCart.filter(item => item.quantity > 0);
       state.totals = calculateTotals(state.currentCart);
     },
     updateQuantity:(state, action) => {

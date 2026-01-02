@@ -104,7 +104,29 @@ export const createVentaThunk = (ventaData) => {
         data.append("descuento"     ,posStore.totals.discountAmount);
         data.append("impuesto"      ,posStore.totals.taxValue);
         data.append("total"         ,posStore.totals.total);
-        data.append("items"         ,JSON.stringify(posStore.currentCart));
+
+        // Transform cart items to properly handle combos
+        const items = posStore.currentCart.map(item => {
+            if (item.isCombo) {
+                return {
+                    id: item.id,
+                    quantity: item.quantity,
+                    precio_final: item.precio_total,
+                    isCombo: true,
+                    combo_id: item.id,
+                    combo_productos: item.productos
+                };
+            } else {
+                return {
+                    id: item.id,
+                    quantity: item.quantity,
+                    precio_final: item.precio_final,
+                    isCombo: false
+                };
+            }
+        });
+
+        data.append("items", JSON.stringify(items));
 
         await dispatch(showBackDropStore());
  

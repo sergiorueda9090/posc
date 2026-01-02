@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect, use } from 'react';
-import { Container, Grid, Box, Typography, Button, FormControl, Select, MenuItem, InputLabel, TextField } from '@mui/material';
+import { Container, Grid, Box, Typography, Button, FormControl, Select, MenuItem, InputLabel, TextField, Tabs, Tab } from '@mui/material';
 
 import {  CatalogoProductos }   from '../components/CatalogoProductos.jsx';
+import {  CatalogoCombos }      from '../components/CatalogoCombos.jsx';
 import {  CartSummary       }   from '../components/CartSummary.jsx';
 import { ClientModal }          from '../components/ClientModal.jsx';
 import { Numpad }               from '../components/Numpad.jsx';
@@ -42,6 +43,7 @@ const MainView = () => {
     const [isClientModalOpen, setIsClientModalOpen] = useState(false);
     const [isCardModalOpen, setIsCardModalOpen]     = useState(false);
     const [metodoPago, setMetodoPago]               = useState('Efectivo');
+    const [tabValue, setTabValue]                   = useState(0);
 
     useEffect(() => {
         dispatch( getCodigoVentaThunk() );
@@ -221,10 +223,42 @@ const MainView = () => {
     return (
         <Container maxWidth={false} sx={{ height: '100vh', p: 0 }}>
             <Grid container sx={{ height: '100%' }}>
-                
-                {/* COLUMNA 1: CATÁLOGO DE PRODUCTOS (6 unidades) */}
+
+                {/* COLUMNA 1: CATÁLOGO DE PRODUCTOS Y COMBOS (6 unidades) */}
                 <Grid item xs={12} lg={6}>
-                    <CatalogoProductos addToCart={addToCart} />
+                    <Box sx={{ bgcolor: '#1e272e', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                        {/* Tabs de navegación */}
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: '#1e272e' }}>
+                            <Tabs
+                                value={tabValue}
+                                onChange={(e, newValue) => setTabValue(newValue)}
+                                sx={{
+                                    '& .MuiTab-root': {
+                                        color: 'rgba(255,255,255,0.6)',
+                                        fontWeight: 600,
+                                        fontSize: '1rem',
+                                        minHeight: 56,
+                                    },
+                                    '& .Mui-selected': {
+                                        color: '#fff !important',
+                                    },
+                                    '& .MuiTabs-indicator': {
+                                        backgroundColor: '#16a085',
+                                        height: 3,
+                                    }
+                                }}
+                            >
+                                <Tab label="🛍️ Productos" />
+                                <Tab label="🎁 Combos" />
+                            </Tabs>
+                        </Box>
+
+                        {/* Contenido de las tabs */}
+                        <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+                            {tabValue === 0 && <CatalogoProductos addToCart={addToCart} />}
+                            {tabValue === 1 && <CatalogoCombos addToCart={addToCart} />}
+                        </Box>
+                    </Box>
                 </Grid>
 
                 {/* COLUMNA 2: CARRITO Y CLIENTE (3 unidades) */}

@@ -38,6 +38,7 @@ export const SideBar = ({ drawerWidth = 240, mobileOpen, handleDrawerToggle, isS
     { text: 'Categorias',           icon: <CategoryIcon />,                   route: '/categorias' },
     { text: 'Subcategorias',        icon: <WidgetsIcon />,                    route: '/subcategorias' },
     { text: 'Productos',            icon: <ProductionQuantityLimitsIcon />,   route: '/productos' },
+    { text: 'Combos',               icon: <WidgetsIcon />,                    route: '/combos' },
     { text: 'Pos',                  icon: <PointOfSaleIcon />,                route: '/pos' },
     { text: 'Gastos',               icon: <MoneyOffIcon />,                   route: '/gastos' },
     { text: 'Relacionar Gastos',    icon: <ArrowCircleDownIcon />,            route: '/relacionargastos' },
