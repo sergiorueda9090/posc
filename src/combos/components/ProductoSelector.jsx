@@ -61,8 +61,24 @@ export const ProductoSelector = ({ editingProducto, onSelect, onCancel }) => {
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ pt: 2 }}>
-      <FormControl fullWidth sx={{ mb: 2 }} required>
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{
+        pt: { xs: 1, sm: 2 },
+        px: { xs: 1, sm: 2 },
+      }}
+    >
+      <FormControl
+        fullWidth
+        sx={{
+          mb: 2,
+          '& .MuiInputLabel-root': {
+            fontSize: { xs: '0.9rem', sm: '1rem' },
+          },
+        }}
+        required
+      >
         <InputLabel>Producto</InputLabel>
         <Select
           name="producto_id"
@@ -70,9 +86,18 @@ export const ProductoSelector = ({ editingProducto, onSelect, onCancel }) => {
           label="Producto"
           onChange={handleChange}
           disabled={!!editingProducto}
+          sx={{
+            fontSize: { xs: '0.9rem', sm: '1rem' },
+          }}
         >
           {productos?.results?.map((producto) => (
-            <MenuItem key={producto.id} value={producto.id}>
+            <MenuItem
+              key={producto.id}
+              value={producto.id}
+              sx={{
+                fontSize: { xs: '0.85rem', sm: '0.875rem' },
+              }}
+            >
               {producto.nombre} - ${producto.precio_final}
             </MenuItem>
           ))}
@@ -88,7 +113,15 @@ export const ProductoSelector = ({ editingProducto, onSelect, onCancel }) => {
         onChange={handleChange}
         required
         inputProps={{ step: '0.01', min: '0' }}
-        sx={{ mb: 2 }}
+        sx={{
+          mb: 2,
+          '& .MuiInputLabel-root': {
+            fontSize: { xs: '0.9rem', sm: '1rem' },
+          },
+          '& .MuiInputBase-input': {
+            fontSize: { xs: '0.9rem', sm: '1rem' },
+          },
+        }}
       />
 
       <TextField
@@ -100,14 +133,46 @@ export const ProductoSelector = ({ editingProducto, onSelect, onCancel }) => {
         onChange={handleChange}
         required
         inputProps={{ min: '1' }}
-        sx={{ mb: 3 }}
+        sx={{
+          mb: 3,
+          '& .MuiInputLabel-root': {
+            fontSize: { xs: '0.9rem', sm: '1rem' },
+          },
+          '& .MuiInputBase-input': {
+            fontSize: { xs: '0.9rem', sm: '1rem' },
+          },
+        }}
       />
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-        <Button onClick={onCancel}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          justifyContent: 'flex-end',
+          gap: 2,
+        }}
+      >
+        <Button
+          onClick={onCancel}
+          sx={{
+            width: { xs: '100%', sm: 'auto' },
+            fontSize: { xs: '0.85rem', sm: '0.875rem' },
+          }}
+        >
           Cancelar
         </Button>
-        <Button type="submit" variant="contained">
+        <Button
+          type="submit"
+          variant="contained"
+          sx={{
+            width: { xs: '100%', sm: 'auto' },
+            fontSize: { xs: '0.85rem', sm: '0.875rem' },
+            boxShadow: '0 4px 6px rgba(25, 118, 210, 0.25)',
+            '&:hover': {
+              boxShadow: '0 6px 10px rgba(25, 118, 210, 0.35)',
+            },
+          }}
+        >
           {editingProducto ? 'Actualizar' : 'Agregar'}
         </Button>
       </Box>
