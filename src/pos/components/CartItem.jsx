@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Box, Typography,  IconButton, Divider, Tooltip } from '@mui/material';
+import { Box, Typography, TextField, IconButton, Divider, Tooltip } from '@mui/material';
 import { 
     Add as AddIcon, 
     Remove as RemoveIcon, 
@@ -13,6 +13,7 @@ import { updateQuantityThunks, removeItemThunks} from '../../store/posStore/posT
 export const CartItem = ({ item }) => {
 
     const dispatch = useDispatch();
+    const [inputValue, setInputValue] = useState(item.quantity.toString());
 
     const updateQuantity = (item, delta) => {
         dispatch(updateQuantityThunks(item, delta));
@@ -21,6 +22,40 @@ export const CartItem = ({ item }) => {
     const removeItem = (item, delta) => {
         dispatch(removeItemThunks(item, delta));
     };
+
+    const handleQuantityChange = (e) => {
+        const value = e.target.value;
+        // Permitir solo números
+        if (value === '' || /^\d+$/.test(value)) {
+            setInputValue(value);
+        }
+    };
+
+    const handleQuantityBlur = () => {
+        const newQuantity = parseInt(inputValue, 10);
+
+        // Validar que sea un número válido y mayor a 0
+        if (!isNaN(newQuantity) && newQuantity > 0) {
+            const delta = newQuantity - item.quantity;
+            if (delta !== 0) {
+                updateQuantity(item, delta);
+            }
+        } else {
+            // Si el valor no es válido, restaurar al valor actual
+            setInputValue(item.quantity.toString());
+        }
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            e.target.blur(); // Trigger onBlur event
+        }
+    };
+
+    // Sincronizar inputValue cuando item.quantity cambie
+    React.useEffect(() => {
+        setInputValue(item.quantity.toString());
+    }, [item.quantity]);
 
     return (
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1, borderBottom: '1px solid #eee' }}>
@@ -40,7 +75,19 @@ export const CartItem = ({ item }) => {
                 <IconButton size="small" onClick={() => updateQuantity(item, -1)} disabled={item.quantity <= 1}>
                     <RemoveIcon fontSize="small" />
                 </IconButton>
-                <Typography sx={{ mx: 0.5 }}>{item.quantity}</Typography>
+                <TextField
+                    value={inputValue}
+                    onChange={handleQuantityChange}
+                    onBlur={handleQuantityBlur}
+                    onKeyPress={handleKeyPress}
+                    size="small"
+                    inputProps={{
+                        style: { textAlign: 'center', padding: '4px 8px', width: '40px' },
+                        inputMode: 'numeric',
+                        pattern: '[0-9]*'
+                    }}
+                    sx={{ mx: 0.5 }}
+                />
                 <IconButton size="small" onClick={() => updateQuantity(item, 1)}>
                     <AddIcon fontSize="small" />
                 </IconButton>

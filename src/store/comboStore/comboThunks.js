@@ -329,7 +329,10 @@ export const addProductToComboThunk = (comboId, productoData) => {
       const response = await axios.request(options);
 
       if (response.status === 201) {
+        
         await dispatch(addProductoToComboStore(response.data));
+        
+        await dispatch(getAllThunks());
 
         await dispatch(showAlert({
           type: "success",
@@ -379,6 +382,8 @@ export const removeProductFromComboThunk = (comboId, productoComboId) => {
 
       if (response.status === 200 || response.status === 204) {
         await dispatch(removeProductoFromComboStore({ id: productoComboId }));
+         
+        await dispatch(getAllThunks());
 
         await dispatch(showAlert({
           type: "success",

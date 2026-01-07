@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
@@ -17,6 +17,7 @@ import {
   DialogContent,
   useMediaQuery,
   useTheme,
+  Autocomplete,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -30,7 +31,7 @@ export const ComboForm = ({ onClose }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { id, nombre, activo, productos, precio_total } = useSelector(state => state.comboStore);
+  const { id, nombre, activo, productos, precio_total, combos } = useSelector(state => state.comboStore);
 
   const [formData, setFormData] = useState({
     nombre: '',
@@ -39,6 +40,19 @@ export const ComboForm = ({ onClose }) => {
 
   const [openProductoSelector, setOpenProductoSelector] = useState(false);
   const [editingProducto, setEditingProducto] = useState(null);
+
+  // Obtener nombres únicos de combos existentes para el autocomplete
+  const nombresExistentes = useMemo(() => {
+    // Verificar que combos sea un array válido
+    if (!combos || !Array.isArray(combos) || combos.length === 0) return [];
+    // Extraer nombres únicos y filtrar el combo actual si está en modo edición
+    const nombres = combos
+      .filter(combo => !id || combo.id !== id) // Excluir el combo actual en edición
+      .map(combo => combo.nombre)
+      .filter(Boolean); // Filtrar valores vacíos
+    // Eliminar duplicados
+    return [...new Set(nombres)];
+  }, [combos, id]);
 
   useEffect(() => {
     if (id) {
@@ -106,22 +120,39 @@ export const ComboForm = ({ onClose }) => {
       }}
     >
       {/* Información del Combo */}
-      <TextField
-        fullWidth
-        label="Nombre del Combo"
-        name="nombre"
+      <Autocomplete
+        freeSolo
+        options={nombresExistentes}
         value={formData.nombre}
-        onChange={handleChange}
-        required
-        sx={{
-          mb: 2,
-          '& .MuiInputLabel-root': {
-            fontSize: { xs: '0.9rem', sm: '1rem' },
-          },
-          '& .MuiInputBase-input': {
-            fontSize: { xs: '0.9rem', sm: '1rem' },
-          },
+        onChange={(event, newValue) => {
+          setFormData({
+            ...formData,
+            nombre: newValue || '',
+          });
         }}
+        onInputChange={(event, newInputValue) => {
+          setFormData({
+            ...formData,
+            nombre: newInputValue || '',
+          });
+        }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Nombre del Combo"
+            name="nombre"
+            required
+            sx={{
+              '& .MuiInputLabel-root': {
+                fontSize: { xs: '0.9rem', sm: '1rem' },
+              },
+              '& .MuiInputBase-input': {
+                fontSize: { xs: '0.9rem', sm: '1rem' },
+              },
+            }}
+          />
+        )}
+        sx={{ mb: 2 }}
       />
 
       <FormControlLabel

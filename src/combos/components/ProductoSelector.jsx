@@ -1,13 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   TextField,
   Button,
+  Autocomplete,
 } from '@mui/material';
 
 import { getAllThunks as getAllProductosThunks } from '../../store/productoStore/productoThunks';
@@ -22,35 +19,51 @@ export const ProductoSelector = ({ editingProducto, onSelect, onCancel }) => {
     cantidad: 1,
   });
 
+  const [selectedProducto, setSelectedProducto] = useState(null);
+
+  // Preparar las opciones de productos para el Autocomplete
+  const productosOptions = useMemo(() => {
+    if (!productos?.results || !Array.isArray(productos.results)) return [];
+    return productos.results;
+  }, [productos]);
+
   useEffect(() => {
     dispatch(getAllProductosThunks({ pageSize: 1000 }));
   }, [dispatch]);
 
   useEffect(() => {
-    if (editingProducto) {
+    if (editingProducto && productosOptions.length > 0) {
+      const producto = productosOptions.find(p => p.id === editingProducto.producto_id);
+      setSelectedProducto(producto || null);
       setFormData({
         producto_id: editingProducto.producto_id,
         precio_combo: editingProducto.precio_combo,
         cantidad: editingProducto.cantidad,
       });
     }
-  }, [editingProducto]);
+  }, [editingProducto, productosOptions]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
 
-    // Si selecciona un producto, auto-llenar con precio_final
-    if (name === 'producto_id') {
-      const producto = productos.results?.find(p => p.id === value);
+  const handleProductoChange = (event, newValue) => {
+    setSelectedProducto(newValue);
+    if (newValue) {
       setFormData({
         ...formData,
-        [name]: value,
-        precio_combo: producto ? producto.precio_final : '',
+        producto_id: newValue.id,
+        precio_combo: newValue.precio_final,
       });
     } else {
       setFormData({
         ...formData,
-        [name]: value,
+        producto_id: '',
+        precio_combo: '',
       });
     }
   };
@@ -69,40 +82,36 @@ export const ProductoSelector = ({ editingProducto, onSelect, onCancel }) => {
         px: { xs: 1, sm: 2 },
       }}
     >
-      <FormControl
+      <Autocomplete
         fullWidth
-        sx={{
-          mb: 2,
-          '& .MuiInputLabel-root': {
-            fontSize: { xs: '0.9rem', sm: '1rem' },
-          },
-        }}
-        required
-      >
-        <InputLabel>Producto</InputLabel>
-        <Select
-          name="producto_id"
-          value={formData.producto_id}
-          label="Producto"
-          onChange={handleChange}
-          disabled={!!editingProducto}
-          sx={{
-            fontSize: { xs: '0.9rem', sm: '1rem' },
-          }}
-        >
-          {productos?.results?.map((producto) => (
-            <MenuItem
-              key={producto.id}
-              value={producto.id}
-              sx={{
-                fontSize: { xs: '0.85rem', sm: '0.875rem' },
-              }}
-            >
-              {producto.nombre} - ${producto.precio_final}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+        options={productosOptions}
+        value={selectedProducto}
+        onChange={handleProductoChange}
+        disabled={!!editingProducto}
+        getOptionLabel={(option) => option.nombre || ''}
+        renderOption={(props, option) => (
+          <li {...props} key={option.id}>
+            {option.nombre} - ${option.precio_final}
+          </li>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Producto"
+            required
+            sx={{
+              '& .MuiInputLabel-root': {
+                fontSize: { xs: '0.9rem', sm: '1rem' },
+              },
+              '& .MuiInputBase-input': {
+                fontSize: { xs: '0.9rem', sm: '1rem' },
+              },
+            }}
+          />
+        )}
+        isOptionEqualToValue={(option, value) => option.id === value?.id}
+        sx={{ mb: 2 }}
+      />
 
       <TextField
         fullWidth
