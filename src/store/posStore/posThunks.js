@@ -1,7 +1,8 @@
 import axios from "axios";
 import { showBackDropStore, hideBackDropStore,openModalShared, closeModalShared, showAlert } from "../globalStore/globalStore.js";
-import { showStore, listStore, listVentasStore, resetFormularioStore, handleFormStore, 
-         addToCart, updateQuantity, removeItem, getCodigoVentaStore } from "./posStore.js";
+import { showStore, listStore, listVentasStore, resetFormularioStore, handleFormStore,
+         addToCart, updateQuantity, removeItem, getCodigoVentaStore,
+         addPago, removePago, clearPagos } from "./posStore.js";
 import { getAllThunks as getAllThunksProductos } from "../productoStore/productoThunks.js";
 
 import { URL } from "../../constants/constantGlogal.js";
@@ -95,15 +96,26 @@ export const createVentaThunk = (ventaData) => {
         const errorMessage = "Verifica que todos los campos estén correctos.";
         const data = new FormData();
 
+        const pagos = posStore.pagos || [];
+        const hasPagos = pagos.length > 0;
+
+        const sumaPagos = pagos.reduce((sum, p) => sum + parseFloat(p.monto || 0), 0);
+        const recibido = hasPagos ? sumaPagos : parseFloat(posStore.efectivo_recibido);
+        const cambio = Math.max(0, sumaPagos - posStore.totals.total);
+
         data.append("cliente_id"    ,posStore.cliente_id.id || '');
         data.append("tarjeta_id"    ,posStore.tarjeta_id || '');
         data.append("metodo_pago"   ,posStore.metodo_pago);
-        data.append("recibido"      ,posStore.efectivo_recibido);
-        data.append("cambio"        ,(parseFloat(posStore.efectivo_recibido) - posStore.totals.total));
+        data.append("recibido"      ,recibido);
+        data.append("cambio"        ,cambio);
         data.append("subtotal"      ,posStore.totals.subtotalAfterDiscount);
         data.append("descuento"     ,posStore.totals.discountAmount);
         data.append("impuesto"      ,posStore.totals.taxValue);
         data.append("total"         ,posStore.totals.total);
+
+        if (hasPagos) {
+            data.append("pagos", JSON.stringify(pagos));
+        }
 
         // Transform cart items to properly handle combos
         const items = posStore.currentCart.map(item => {

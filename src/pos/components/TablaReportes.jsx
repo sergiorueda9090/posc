@@ -189,16 +189,34 @@ export const TablaReportes = (props) => {
                   <TableCell>{venta.cliente}</TableCell>
 
                   <TableCell>
-                    <Chip
-                      label={venta.metodo_pago}
-                      color="success"
-                      size="small"
-                      sx={{
-                        fontWeight: "bold",
-                        bgcolor: "#4caf50",
-                        color: "white",
-                      }}
-                    />
+                    {venta.pagos && venta.pagos.length > 1 ? (
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        {venta.pagos.map((p, pi) => (
+                          <Chip
+                            key={pi}
+                            label={`${p.metodo_pago}: ${(p.monto ?? 0).toLocaleString("es-CO", { style: "currency", currency: "COP" })}`}
+                            size="small"
+                            sx={{
+                              fontWeight: "bold",
+                              bgcolor: pi === 0 ? "#4caf50" : "#2196f3",
+                              color: "white",
+                              fontSize: "0.7rem",
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    ) : (
+                      <Chip
+                        label={venta.metodo_pago}
+                        color="success"
+                        size="small"
+                        sx={{
+                          fontWeight: "bold",
+                          bgcolor: "#4caf50",
+                          color: "white",
+                        }}
+                      />
+                    )}
                   </TableCell>
 
                   {/* Valores */}

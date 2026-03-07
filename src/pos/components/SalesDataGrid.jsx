@@ -74,19 +74,41 @@ export function SalesDataGrid({ ventas }) {
     {
       field: "metodo_pago",
       headerName: "Método",
-      width: 140,
-      renderCell: (params) => (
-        <Chip
-          label={params.value || "N/A"}
-          sx={{
-            bgcolor: "#4caf50",
-            color: "white",
-            fontWeight: "bold",
-            textTransform: "capitalize",
-          }}
-          size="small"
-        />
-      ),
+      width: 200,
+      renderCell: (params) => {
+        const pagos = params.row.pagos;
+        if (pagos && pagos.length > 1) {
+          return (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, py: 0.5 }}>
+              {pagos.map((p, i) => (
+                <Chip
+                  key={i}
+                  label={`${p.metodo_pago}: ${(p.monto ?? 0).toLocaleString("es-CO", { style: "currency", currency: "COP" })}`}
+                  sx={{
+                    bgcolor: i === 0 ? "#4caf50" : "#2196f3",
+                    color: "white",
+                    fontWeight: "bold",
+                    fontSize: "0.7rem",
+                  }}
+                  size="small"
+                />
+              ))}
+            </Box>
+          );
+        }
+        return (
+          <Chip
+            label={params.value || "N/A"}
+            sx={{
+              bgcolor: "#4caf50",
+              color: "white",
+              fontWeight: "bold",
+              textTransform: "capitalize",
+            }}
+            size="small"
+          />
+        );
+      },
     },
     {
       field: "subtotal",

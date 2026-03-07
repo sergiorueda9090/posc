@@ -60,6 +60,9 @@ export const posStore = createSlice({
     telefono_cliente       : '',
     direccion_cliente      : '',
 
+    // Pagos múltiples
+    pagos                  : [],
+
     totals                 : {
       subtotal              : 0,
       impuesto              : 0,
@@ -103,6 +106,7 @@ export const posStore = createSlice({
       state.subTotal               = 0;
       state.creado_por_username    = '';
       state.codigo_venta           = '';
+      state.pagos                  = [];
       state.totals                 = {
         subtotal              : 0,
         impuesto              : 0,
@@ -119,6 +123,15 @@ export const posStore = createSlice({
     handleFormStore:(state, action) => {
       const { name, value } = action.payload;
       state[name] = value;
+    },
+    addPago:(state, action) => {
+      state.pagos.push(action.payload);
+    },
+    removePago:(state, action) => {
+      state.pagos.splice(action.payload, 1);
+    },
+    clearPagos:(state) => {
+      state.pagos = [];
     },
     addToCart:(state, action) => {
       const productToAdd = action.payload;
@@ -212,4 +225,5 @@ export const posStore = createSlice({
 
 // Action creators are generated for each case reducer function
 export const { showStore, listStore, listVentasStore, resetFormularioStore, handleFormStore,
-              addToCart, updateQuantity, removeItem, getCodigoVentaStore } = posStore.actions;
+              addToCart, updateQuantity, removeItem, getCodigoVentaStore,
+              addPago, removePago, clearPagos } = posStore.actions;

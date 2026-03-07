@@ -1,95 +1,139 @@
-import React, { useState, useMemo, useEffect, use } from 'react';
-import { Container, Grid, Box, Typography, Button, FormControl, Select, MenuItem, InputLabel, TextField, Tabs, Tab } from '@mui/material';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Container, Grid, Box, Typography, Button, FormControl, Select, MenuItem, InputLabel, TextField, Tabs, Tab,
+         Chip, IconButton, Paper, Divider } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 
 import {  CatalogoProductos }   from '../components/CatalogoProductos.jsx';
 import {  CatalogoCombos }      from '../components/CatalogoCombos.jsx';
 import {  CartSummary       }   from '../components/CartSummary.jsx';
 import { ClientModal }          from '../components/ClientModal.jsx';
-import { Numpad }               from '../components/Numpad.jsx';
-import { CardPaymentModal }     from '../components/CardPaymentModal.jsx';
-import { calculateTotals }      from '../components/calculateTotals.jsx';
 
 // --- MOCK DATA (DATOS SIMULADOS) ---
 import { MOCK_CLIENTS_DB }  from '../data/ClientesData.jsx';
 import { formatCurrency }   from '../constants/formatCurrency.js';
 
 import { useSelector, useDispatch } from 'react-redux';
-import { addToCartThunks, resetPosStoreThunk, handleFormStoreThunk, createVentaThunk, getVentasThunk } from '../../store/posStore/posThunks.js';
+import { addToCartThunks, resetPosStoreThunk, createVentaThunk, getVentasThunk } from '../../store/posStore/posThunks.js';
+import { addPago, removePago } from '../../store/posStore/posStore.js';
 import { showAlert } from '../../store/globalStore/globalStore.js';
 import { getAllThunks as getAllThunksClientes } from '../../store/clienteStore/clienteThunks.js';
 import { getAllThunks as getAllTarjetas } from "../../store/tarjetasBancariasStore/tarjetasBancariasStoreThunks";
 import { getCodigoVentaThunk } from "../../store/posStore/posThunks.js";
 import FooterPOS from '../components/FooterPOS.jsx';
 
-// 💳 Métodos de pago comunes en Colombia
 const METODOS_PAGO = [
-    { value: 'Efectivo', label: '💵 Efectivo' },
-    { value: 'Tarjeta Débito', label: '💳 Tarjeta de Débito' },
-    { value: 'Tarjeta Crédito', label: '💳 Tarjeta de Crédito' },
-    { value: 'Daviplata', label: '📱 Daviplata' },
-    { value: 'Nequi', label: '📱 Nequi' },
-    { value: 'Bancolombia', label: '🏦 Bancolombia a la Mano' },
-    { value: 'Transferencia', label: '🔄 Transferencia Bancaria' },
+    { value: 'Efectivo', label: 'Efectivo' },
+    { value: 'Tarjeta Debito', label: 'Tarjeta de Debito' },
+    { value: 'Tarjeta Credito', label: 'Tarjeta de Credito' },
+    { value: 'Daviplata', label: 'Daviplata' },
+    { value: 'Nequi', label: 'Nequi' },
+    { value: 'Bancolombia', label: 'Bancolombia a la Mano' },
+    { value: 'Transferencia', label: 'Transferencia Bancaria' },
 ];
 
 
 const MainView = () => {
-    const { currentCart, efectivo_recibido, totals, tarjeta_id, metodo_pago } = useSelector((state) => state.posStore);
+    const { currentCart, totals, pagos } = useSelector((state) => state.posStore);
     const { codigo_venta }    = useSelector((state) => state.posStore);
     const {tarjetas} = useSelector((state) => state.tarjetasBancariasStore);
     const dispatch = useDispatch();
 
     const [currentClient, setCurrentClient]         = useState(MOCK_CLIENTS_DB[0]);
     const [isClientModalOpen, setIsClientModalOpen] = useState(false);
-    const [isCardModalOpen, setIsCardModalOpen]     = useState(false);
-    const [metodoPago, setMetodoPago]               = useState('Efectivo');
     const [tabValue, setTabValue]                   = useState(0);
+
+    // Estado local para el formulario de agregar pago
+    const [nuevoMetodoPago, setNuevoMetodoPago]     = useState('Efectivo');
+    const [nuevoMontoPago, setNuevoMontoPago]       = useState('');
+    const [nuevoTarjetaId, setNuevoTarjetaId]       = useState('');
 
     useEffect(() => {
         dispatch( getCodigoVentaThunk() );
-        dispatch(getAllTarjetas({ page: 1, pageSize: 100, search: "" })); // Cargar tarjetas bancarias
+        dispatch(getAllTarjetas({ page: 1, pageSize: 100, search: "" }));
     }, [codigo_venta, dispatch]);
-
-    const handleChangeTarjeta  = (event) => {
-        const { value } = event.target;
-        dispatch(handleFormStoreThunk({name: 'tarjeta_id', value: value}));
-    }
-
-    const handleMetodoPagoChange = (event) => {
-        const { value } = event.target;
-        dispatch(handleFormStoreThunk({name: 'metodo_pago', value: value}));
-    }
 
     const handleSetIsClientModalOpen = (isOpen) => {
         dispatch(getAllThunksClientes());
         setIsClientModalOpen(isOpen);
     }
 
-    // Lógica del Carrito
+    // Logica del Carrito
     const addToCart = (product) => {
         dispatch(addToCartThunks(product));
     }
 
-    // Lógica de Finalización de Venta
-    const finalizeSale = (paymentMethod) => {
+    // Calcular monto restante por cubrir
+    const totalPagado = useMemo(() => pagos.reduce((sum, p) => sum + parseFloat(p.monto || 0), 0), [pagos]);
+    const montoRestante = useMemo(() => totals.total - totalPagado, [totals.total, totalPagado]);
+    const cambioTotal = useMemo(() => montoRestante < 0 ? Math.abs(montoRestante) : 0, [montoRestante]);
+
+    // Formatear monto con separador de miles mientras se escribe
+    const handleMontoChange = (e) => {
+        const raw = e.target.value.replace(/[^0-9]/g, '');
+        setNuevoMontoPago(raw);
+    };
+
+    const montoNumerico = parseFloat(nuevoMontoPago) || 0;
+    const montoFormateado = nuevoMontoPago
+        ? montoNumerico.toLocaleString('es-CO')
+        : '';
+
+    const handleAgregarPago = () => {
+        if (!montoNumerico || montoNumerico <= 0) {
+            dispatch(showAlert({ type: "warning", title: "Monto invalido", text: "Ingrese un monto mayor a 0." }));
+            return;
+        }
+        if (montoRestante <= 0) {
+            dispatch(showAlert({ type: "warning", title: "Total ya cubierto", text: "El total de la venta ya esta cubierto." }));
+            return;
+        }
+        dispatch(addPago({
+            metodo_pago: nuevoMetodoPago,
+            monto: montoNumerico,
+            tarjeta_id: nuevoTarjetaId || null,
+        }));
+
+        setNuevoMontoPago('');
+        setNuevoTarjetaId('');
+    };
+
+    const handleRemovePago = (index) => {
+        dispatch(removePago(index));
+    };
+
+    // Autocompletar monto restante
+    const handleAutocompletarMonto = () => {
+        if (montoRestante > 0) {
+            setNuevoMontoPago(Math.round(montoRestante).toString());
+        }
+    };
+
+    // Logica de Finalizacion de Venta
+    const finalizeSale = () => {
         if (currentCart.length === 0) {
             dispatch(showAlert({
                 type: "error",
-                title: "Carrito vacío",
-                text: "El carrito está vacío. Agregue productos para finalizar la venta."
+                title: "Carrito vacio",
+                text: "El carrito esta vacio. Agregue productos para finalizar la venta."
             }));
             return;
         }
 
-        const total = totals.total;
-        const received = paymentMethod === 'Efectivo' ? (parseFloat(efectivo_recibido) || 0) : total;
-        const change = received - total;
-
-        if (paymentMethod === 'Efectivo' && change < 0) {
+        if (pagos.length === 0) {
             dispatch(showAlert({
                 type: "warning",
-                title: "⚠️ Pago Insuficiente",
-                text: `El monto recibido es insuficiente. Faltan ${formatCurrency(Math.abs(change))}.`
+                title: "Sin metodos de pago",
+                text: "Debe agregar al menos un metodo de pago."
+            }));
+            return;
+        }
+
+        if (montoRestante > 0.99) {
+            dispatch(showAlert({
+                type: "warning",
+                title: "Pago insuficiente",
+                text: `Falta cubrir ${formatCurrency(montoRestante)} del total de la venta.`
             }));
             return;
         }
@@ -97,18 +141,26 @@ const MainView = () => {
         const saleData = {
             id: Date.now(),
             date: new Date().toLocaleString(),
-            total: formatCurrency(total),
-            received: formatCurrency(received),
-            change: formatCurrency(Math.abs(change)),
+            total: formatCurrency(totals.total),
+            change: formatCurrency(cambioTotal),
             client: currentClient,
-            method: paymentMethod,
+            pagos: pagos,
             items: currentCart,
         };
 
-        // 🧾 Mostrar vista previa de la venta antes de confirmar
+        // Construir HTML de pagos para el preview
+        const pagosHtml = pagos.map(p => {
+            const tarjeta = p.tarjeta_id ? tarjetas.find(t => t.id === p.tarjeta_id) : null;
+            return `<tr>
+                <td style="padding:6px 8px; border-bottom:1px solid #eee;">${p.metodo_pago}</td>
+                <td style="padding:6px 8px; text-align:right; border-bottom:1px solid #eee; font-weight:bold;">${formatCurrency(p.monto)}</td>
+                ${tarjeta ? `<td style="padding:6px 8px; border-bottom:1px solid #eee; font-size:12px; color:#666;">${tarjeta.nombre}</td>` : `<td style="padding:6px 8px; border-bottom:1px solid #eee;">-</td>`}
+            </tr>`;
+        }).join('');
+
         dispatch(showAlert({
             type: "info",
-            title: "🧐 Verifique los Datos Antes de Confirmar",
+            title: "Verifique los Datos Antes de Confirmar",
             html: `
             <div style="
                 font-family: 'Segoe UI', Roboto, sans-serif;
@@ -118,28 +170,20 @@ const MainView = () => {
                 color: #2c2c2c;
                 box-shadow: 0 2px 10px rgba(0,0,0,0.08);
                 width: 100%;
-                max-width: 480px;
+                max-width: 520px;
                 margin: auto;
             ">
-                <h2 style="
-                    margin: 0 0 10px 0; 
-                    text-align: center; 
-                    color: #262254; 
-                    font-size: 22px;
-                    letter-spacing: 0.5px;
-                ">
-                    🧾 Verifique su Venta
+                <h2 style="margin: 0 0 10px 0; text-align: center; color: #262254; font-size: 22px;">
+                    Verifique su Venta
                 </h2>
                 <p style="text-align:center; font-size:13px; color:#777; margin-bottom:15px;">
-                    Antes de generar la venta, asegúrese de que toda la información sea correcta.
+                    Antes de generar la venta, asegurese de que toda la informacion sea correcta.
                 </p>
                 <hr style="border: 1px solid #ddd; margin: 10px 0;">
 
                 <div style="font-size:15px; line-height:1.6;">
                     <p><strong>ID Venta:</strong> ${codigo_venta}</p>
-                    <p><strong>Cliente:</strong> ${saleData.client.name} <span style="color:#666;">(ID: ${saleData.client.id})</span></p>
-                    <p><strong>Método de pago:</strong> ${saleData.method}</p>
-                    ${paymentMethod !== 'Efectivo' ? `<p><strong>Cuenta destino:</strong> ${metodo_pago}</p>` : ''}
+                    <p><strong>Cliente:</strong> ${saleData.client.name}</p>
                 </div>
 
                 <hr style="border: 1px solid #ddd; margin: 15px 0;">
@@ -171,24 +215,36 @@ const MainView = () => {
 
                 <hr style="border: 1px solid #ddd; margin: 15px 0;">
 
+                <h3 style="margin:0 0 8px 0; color:#262254; font-size:16px;">Metodos de Pago:</h3>
+                <table style="width:100%; border-collapse: collapse; font-size: 14px;">
+                    <thead>
+                        <tr style="background:#f5f5f5;">
+                            <th style="padding:8px; text-align:left;">Metodo</th>
+                            <th style="padding:8px; text-align:right;">Monto</th>
+                            <th style="padding:8px; text-align:left;">Cuenta</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${pagosHtml}
+                    </tbody>
+                </table>
+
+                <hr style="border: 1px solid #ddd; margin: 15px 0;">
+
                 <div style="text-align:right; font-size:17px; line-height:1.8;">
                     <p><strong>Total:</strong> <span style="color:#262254;">${saleData.total}</span></p>
-                    <p><strong>Recibido:</strong> <span style="color:#262254;">${saleData.received}</span></p>
+                    <p><strong>Total Pagado:</strong> <span style="color:#262254;">${formatCurrency(totalPagado)}</span></p>
+                    ${cambioTotal > 0 ? `
                     <p><strong>Cambio:</strong> <span style="color:#28a745;">${saleData.change}</span></p>
+                    ` : ''}
                 </div>
 
                 <hr style="border: 1px solid #ddd; margin: 20px 0;">
-                <p style="
-                    text-align:center; 
-                    font-weight:600; 
-                    color:#262254; 
-                    font-size:16px; 
-                    margin:0;
-                ">
-                    Si todo está correcto, confirme para continuar con la venta.
+                <p style="text-align:center; font-weight:600; color:#262254; font-size:16px; margin:0;">
+                    Si todo esta correcto, confirme para continuar con la venta.
                 </p>
             </div>
-            `, 
+            `,
             confirmText: "Confirmar Venta",
             cancelText: "Cancelar",
             showCancel: true,
@@ -196,26 +252,17 @@ const MainView = () => {
                 dispatch(createVentaThunk())
                 dispatch(resetPosStoreThunk());
                 dispatch(getVentasThunk());
-                setIsCardModalOpen(false);
-                dispatch(showAlert({
-                    type: "success",
-                    title: "✅ Venta Generada Correctamente",
-                    text: "La venta se ha completado y el sistema ha sido reiniciado."
-                }));
             },
         }));
     };
 
-
     const handleFinalizarVenta = () => {
-        finalizeSale(metodoPago);
+        finalizeSale();
     }
 
-    const handleCardPaymentFinalize = () => finalizeSale('Tarjeta');
     const handleAnularVenta = () => {
-        if (window.confirm('¿Está seguro de anular la venta y vaciar el carrito?')) {
+        if (window.confirm('Esta seguro de anular la venta y vaciar el carrito?')) {
             dispatch(resetPosStoreThunk());
-            dispatch(handleFormStoreThunk({name: 'efectivo_recibido', value: '0.00'}));
         }
     }
 
@@ -224,10 +271,9 @@ const MainView = () => {
         <Container maxWidth={false} sx={{ height: '100vh', p: 0 }}>
             <Grid container sx={{ height: '100%' }}>
 
-                {/* COLUMNA 1: CATÁLOGO DE PRODUCTOS Y COMBOS (6 unidades) */}
+                {/* COLUMNA 1: CATALOGO DE PRODUCTOS Y COMBOS */}
                 <Grid item xs={12} lg={6}>
                     <Box sx={{ bgcolor: '#1e272e', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                        {/* Tabs de navegación */}
                         <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: '#1e272e' }}>
                             <Tabs
                                 value={tabValue}
@@ -248,12 +294,11 @@ const MainView = () => {
                                     }
                                 }}
                             >
-                                <Tab label="🛍️ Productos" />
-                                <Tab label="🎁 Combos" />
+                                <Tab label="Productos" />
+                                <Tab label="Combos" />
                             </Tabs>
                         </Box>
 
-                        {/* Contenido de las tabs */}
                         <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
                             {tabValue === 0 && <CatalogoProductos addToCart={addToCart} />}
                             {tabValue === 1 && <CatalogoCombos addToCart={addToCart} />}
@@ -261,9 +306,9 @@ const MainView = () => {
                     </Box>
                 </Grid>
 
-                {/* COLUMNA 2: CARRITO Y CLIENTE (3 unidades) */}
+                {/* COLUMNA 2: CARRITO Y CLIENTE */}
                 <Grid item xs={12} sm={6} lg={3}>
-                    <CartSummary 
+                    <CartSummary
                         currentClient={currentClient}
                         setCurrentClient={setCurrentClient}
                         openClientModal={() => handleSetIsClientModalOpen(true)}
@@ -271,61 +316,155 @@ const MainView = () => {
                     />
                 </Grid>
 
-                {/* COLUMNA 3: PANEL DE PAGO Y TECLADO (3 unidades) */}
+                {/* COLUMNA 3: PANEL DE PAGOS MULTIPLES */}
                 <Grid item xs={12} sm={6} lg={3} sx={{ bgcolor: '#f0f2f5' }}>
-                    <Box sx={{ p: 2, height: '100vh', display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant="h5" sx={{ mb: 2 }}>
-                            Opciones de Pago 💳
+                    <Box sx={{ p: 2, height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+                        <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+                            Opciones de Pago
                         </Typography>
 
-                        {/* 🔥 Select de Método de Pago */}
-                        <FormControl fullWidth sx={{ mb: 2 }}>
-                            <InputLabel id="metodo-pago-label">Método de Pago</InputLabel>
-                            <Select
-                                labelId="metodo-pago-label"
-                                value={metodo_pago || 'Efectivo'}
-                                label="Método de Pago"
-                                onChange={(e) => handleMetodoPagoChange(e)}
-                                sx={{
-                                    bgcolor: 'white',
-                                    '& .MuiSelect-select': {
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        py: 1.5,
+                        {/* Resumen del total y restante */}
+                        <Paper sx={{ p: 2, mb: 2, bgcolor: '#fff' }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                <Typography variant="body1">Total de la venta:</Typography>
+                                <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#262254' }}>
+                                    {formatCurrency(totals.total)}
+                                </Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                <Typography variant="body1">Total cubierto:</Typography>
+                                <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#4caf50' }}>
+                                    {formatCurrency(totalPagado)}
+                                </Typography>
+                            </Box>
+                            <Divider sx={{ my: 1 }} />
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                                    {montoRestante > 0 ? 'Restante:' : 'Cambio:'}
+                                </Typography>
+                                <Typography variant="body1" sx={{
+                                    fontWeight: 'bold',
+                                    color: montoRestante > 0 ? '#e74c3c' : '#4caf50'
+                                }}>
+                                    {montoRestante > 0
+                                        ? formatCurrency(montoRestante)
+                                        : formatCurrency(cambioTotal)
                                     }
-                                }}
-                            >
-                                {METODOS_PAGO.map((metodo) => (
-                                    <MenuItem key={metodo.value} value={metodo.value}>
-                                        {metodo.label}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                                </Typography>
+                            </Box>
+                        </Paper>
 
-                        {/* 🔥 Select de Cuenta Bancaria (solo si no es efectivo) */}
-                        
-                        <FormControl fullWidth sx={{ mb: 2 }}>
-                            <TextField
-                                fullWidth
-                                select
-                                name="tarjeta_id"
-                                label="🏦 Tarjeta a usar *"
-                                variant="outlined"
-                                size="small"
-                                value={tarjeta_id || ''}
-                                onChange={handleChangeTarjeta}
+                        {/* Pagos agregados */}
+                        {pagos.length > 0 && (
+                            <Paper sx={{ p: 1.5, mb: 2, bgcolor: '#fff' }}>
+                                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold', color: '#555' }}>
+                                    Pagos agregados:
+                                </Typography>
+                                {pagos.map((pago, index) => {
+                                    const tarjeta = pago.tarjeta_id ? tarjetas.find(t => t.id === pago.tarjeta_id) : null;
+                                    return (
+                                        <Box key={index} sx={{
+                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                            p: 1, mb: 0.5, bgcolor: '#f9f9f9', borderRadius: 1, border: '1px solid #e0e0e0'
+                                        }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Chip label={pago.metodo_pago} size="small" color="primary" variant="outlined" />
+                                                {tarjeta && <Typography variant="caption" color="text.secondary">{tarjeta.nombre}</Typography>}
+                                            </Box>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                                    {formatCurrency(pago.monto)}
+                                                </Typography>
+                                                <IconButton size="small" color="error" onClick={() => handleRemovePago(index)}>
+                                                    <DeleteIcon fontSize="small" />
+                                                </IconButton>
+                                            </Box>
+                                        </Box>
+                                    );
+                                })}
+                            </Paper>
+                        )}
+
+                        {/* Formulario para agregar pago */}
+                        {montoRestante > 0 && (
+                            <Paper sx={{ p: 2, mb: 2, bgcolor: '#fff', border: '2px dashed #90caf9' }}>
+                                <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold', color: '#1565c0' }}>
+                                    Agregar metodo de pago:
+                                </Typography>
+
+                                <FormControl fullWidth sx={{ mb: 1.5 }}>
+                                    <InputLabel id="nuevo-metodo-label" size="small">Metodo de Pago</InputLabel>
+                                    <Select
+                                        labelId="nuevo-metodo-label"
+                                        value={nuevoMetodoPago}
+                                        label="Metodo de Pago"
+                                        size="small"
+                                        onChange={(e) => setNuevoMetodoPago(e.target.value)}
+                                        sx={{ bgcolor: 'white' }}
+                                    >
+                                        {METODOS_PAGO.map((metodo) => (
+                                            <MenuItem key={metodo.value} value={metodo.value}>
+                                                {metodo.label}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+
+                                <FormControl fullWidth sx={{ mb: 1.5 }}>
+                                    <TextField
+                                        fullWidth
+                                        select
+                                        label="Tarjeta / Cuenta"
+                                        variant="outlined"
+                                        size="small"
+                                        value={nuevoTarjetaId}
+                                        onChange={(e) => setNuevoTarjetaId(e.target.value)}
+                                    >
+                                        <MenuItem value="">
+                                            <em>Sin tarjeta</em>
+                                        </MenuItem>
+                                        {tarjetas.map((option) => (
+                                            <MenuItem key={option.id} value={option.id}>
+                                                {option.nombre}
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
+                                </FormControl>
+
+                                <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                                    <TextField
+                                        fullWidth
+                                        label="Monto"
+                                        variant="outlined"
+                                        size="small"
+                                        value={montoFormateado}
+                                        onChange={handleMontoChange}
+                                        inputProps={{ inputMode: 'numeric' }}
+                                    />
+                                    <Button
+                                        variant="text"
+                                        size="small"
+                                        onClick={handleAutocompletarMonto}
+                                        sx={{ minWidth: 'auto', whiteSpace: 'nowrap', fontSize: '0.75rem' }}
+                                    >
+                                        Restante
+                                    </Button>
+                                </Box>
+
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    fullWidth
+                                    startIcon={<AddCircleIcon />}
+                                    onClick={handleAgregarPago}
+                                    sx={{ height: 42 }}
                                 >
-                                {tarjetas.map((option) => (
-                                    <MenuItem key={option.id} value={option.id}>
-                                     🏦 {option.nombre}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                        </FormControl>
-                      
+                                    Agregar Pago
+                                </Button>
+                            </Paper>
+                        )}
 
-                        {/* Botones de Finalización */}
+                        {/* Botones de Finalizacion */}
                         <Button
                             variant="contained"
                             color="success"
@@ -334,7 +473,8 @@ const MainView = () => {
                             onClick={handleFinalizarVenta}
                             disabled={
                                 currentCart.length === 0 ||
-                                (metodoPago === 'Efectivo' && totals.total > parseFloat(efectivo_recibido))
+                                pagos.length === 0 ||
+                                montoRestante > 0.99
                             }
                             sx={{ mb: 1, height: 60 }}
                         >
@@ -346,33 +486,26 @@ const MainView = () => {
                             size="small"
                             fullWidth
                             onClick={handleAnularVenta}
-                            sx={{ mb: 3 }}
+                            sx={{ mb: 2 }}
                         >
                             ANULAR VENTA
                         </Button>
 
-                        <Numpad totals={totals} />
                     </Box>
                 </Grid>
             </Grid>
 
             {/* MODALS */}
-            <ClientModal 
-                open={isClientModalOpen} 
-                handleClose={() => setIsClientModalOpen(false)} 
+            <ClientModal
+                open={isClientModalOpen}
+                handleClose={() => setIsClientModalOpen(false)}
                 currentClient={currentClient}
-            />
-            <CardPaymentModal
-                open={isCardModalOpen}
-                handleClose={() => setIsCardModalOpen(false)}
-                total={totals.total}
-                onFinalize={handleCardPaymentFinalize}
             />
             <br></br><br></br>
             <FooterPOS
                 usuario="Sergio Dev"
                 rol="Administrador"
-                turno="Mañana"
+                turno="Manana"
                 totalVentas={1050000}
                 totalProductos={32}
                 estadoConexion={true}
@@ -381,34 +514,32 @@ const MainView = () => {
                 onDevolucion={() =>
                     dispatch(showAlert({
                     type: "info",
-                    title: "🔄 Devolución de producto",
-                    text: "Funcionalidad de devolución en desarrollo."
+                    title: "Devolucion de producto",
+                    text: "Funcionalidad de devolucion en desarrollo."
                     }))
                 }
                 onCambio={() =>
                     dispatch(showAlert({
                     type: "info",
-                    title: "♻️ Cambio de producto",
+                    title: "Cambio de producto",
                     text: "Funcionalidad de cambio de producto en desarrollo."
                     }))
                 }
                 onReporte={() =>
                     dispatch(showAlert({
                     type: "info",
-                    title: "📊 Reporte de ventas",
+                    title: "Reporte de ventas",
                     text: "Generando reporte de ventas..."
                     }))
                 }
                 onCerrarTurno={() =>
                     dispatch(showAlert({
                     type: "warning",
-                    title: "🚪 Cerrar turno",
+                    title: "Cerrar turno",
                     text: "Confirma el cierre del turno actual."
                     }))
                 }
             />
-
-            
         </Container>
     );
 };
