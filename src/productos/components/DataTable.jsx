@@ -1,26 +1,29 @@
 import * as React from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { IconButton, Tooltip } from "@mui/material";
+import { IconButton, Tooltip, Chip, Box, Paper } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import { useSelector, useDispatch } from 'react-redux';
 import { showThunk, deleteThunk, getAllThunks, handleFormStoreThunk } from '../../store/productoStore/productoThunks';
-import { Box } from "@mui/material";
 import { showAlert } from '../../store/globalStore/globalStore';
 import { SearchQuery } from './SearchQuery';
 import { DateRange } from './DateRange';
-import { FormDialogModal} from '../../inventarioProducto/components/FormDialogModal';
+import { FormDialogModal } from '../../inventarioProducto/components/FormDialogModal';
 import { showThunk as showCantidadProducto } from '../../store/inventarioProductoStore/inventarioProductoStoreThunks';
+
+const formatCurrency = (value) => {
+  if (value == null) return '';
+  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+};
 
 export function DataTable() {
 
   const dispatch = useDispatch();
-
   const { productos } = useSelector(state => state.productoStore);
 
-  const [page,     setPage]     = React.useState(0);
-  const [pageSize, setPageSize] = React.useState(30);
+  const [page, setPage] = React.useState(0);
+  const [pageSize, setPageSize] = React.useState(20);
 
   React.useEffect(() => {
     dispatch(getAllThunks({ page: page + 1, pageSize }));
@@ -31,190 +34,186 @@ export function DataTable() {
     dispatch(showCantidadProducto(id));
   }
 
-  
-
   const columns = [
-    { field: 'id',                     headerName: 'ID',                   width: 60 ,  headerAlign: 'right', align: 'right' },
-    { field: 'categoria',              headerName: 'Categoria',            width: 220 , headerAlign: 'right', align: 'right' },
-    { field: 'subcategoria',           headerName: 'Subcategoria',         width: 220 , headerAlign: 'right', align: 'right' },
-    { field: 'proveedor',              headerName: 'Proveedor',            width: 220 , headerAlign: 'right', align: 'right' },
-    { field: 'nombre',                 headerName: 'Nombre',               width: 220 , headerAlign: 'right', align: 'right' },
-    { 
-      field: 'unidad_medida', 
-      headerName: 'Unidad de medida', 
-      width: 180, 
-      headerAlign: 'right', 
-      align: 'right',
-      valueGetter: (params) => {
-        const unidadesMap = {
-          'UND': 'Unidades (UND)',
-          'GRS': 'Gramos (GRS)',
-          'KGS': 'Kilogramos (KGS)'
-        };
-        return unidadesMap[params] || params;
-      }
-    },
     {
-      field: 'genero', 
-      headerName: 'Género', 
-      width: 150,
-      headerAlign: 'right',
-      align: 'right',
-      valueGetter: (params) => {
-        const generoMap = {
-          'M': 'Masculino',
-          'F': 'Femenino',
-          'U': 'Unisex'
-        };
-        return generoMap[params] || params;
-      }
+      field: 'id',
+      headerName: 'ID',
+      width: 70,
+      headerAlign: 'center',
+      align: 'center',
     },
-    { field: 'descripcion',            headerName: 'Descripción',          width: 250 , headerAlign: 'right', align: 'right' },
-    {
-      field: 'precio_compra',
-      headerName: 'Precio de compra',
-      width: 220,
-      renderCell: (params) => {
-        const formattedValue =
-          params.value == null
-            ? ""
-            : new Intl.NumberFormat("es-CO", {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              }).format(params.value);
-
-        return (
-          <span style={{ width: "100%", textAlign: "right", display: "block" }}>
-            {formattedValue}
-          </span>
-        );
-      },
-    },
-    { field: 'porcentaje_ganancia',    headerName: 'Porcentaje ganancia',  width: 220 ,headerAlign: 'right', align: 'right'},
-    { field: 'precio_final',           headerName: 'Precio Final',         width: 220,
-      renderCell: (params) => {
-        const formattedValue =
-          params.value == null
-            ? ""
-            : new Intl.NumberFormat("es-CO", {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              }).format(params.value);
-
-        return (
-          <span style={{ width: "100%", textAlign: "right", display: "block" }}>
-            {formattedValue}
-          </span>
-        );
-      },
-     },
-    { field: 'codigo_busqueda',        headerName: 'Código de búsqueda',   width: 220 ,headerAlign: 'right', align: 'right'},
     {
       field: 'imagen_url',
-      headerName: 'Imagen',
-      width: 100,
+      headerName: 'Img',
+      width: 80,
       sortable: false,
-      renderCell: (params) => {
-        const imageUrl = params
-          console.log(" === imageUrl === ",imageUrl)
-        return (
+      headerAlign: 'center',
+      align: 'center',
+      renderCell: (params) => (
+        params.value ? (
           <img
-            src={imageUrl}
-            alt="Producto"
+            src={params.value}
+            alt=""
             style={{
-              width: 60,
-              height: 60,
+              width: 42,
+              height: 42,
               objectFit: 'cover',
-              borderRadius: '10px',
-              boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-              border: '1px solid #eee',
+              borderRadius: 8,
+              border: '1px solid #e0e0e0',
+            }}
+          />
+        ) : (
+          <Box sx={{ width: 42, height: 42, borderRadius: 2, bgcolor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', color: '#bbb' }}>
+            N/A
+          </Box>
+        )
+      ),
+    },
+    { field: 'nombre', headerName: 'Nombre', flex: 1, minWidth: 160 },
+    { field: 'categoria', headerName: 'Categoria', width: 150 },
+    { field: 'subcategoria', headerName: 'Subcategoria', width: 150 },
+    { field: 'proveedor', headerName: 'Proveedor', width: 150 },
+    {
+      field: 'genero',
+      headerName: 'Genero',
+      width: 100,
+      headerAlign: 'center',
+      align: 'center',
+      renderCell: (params) => {
+        const map = { 'M': { label: 'Masc', color: 'primary' }, 'F': { label: 'Fem', color: 'secondary' }, 'U': { label: 'Uni', color: 'default' } };
+        const info = map[params.value] || { label: params.value || '-', color: 'default' };
+        return <Chip label={info.label} color={info.color} size="small" variant="outlined" />;
+      }
+    },
+    {
+      field: 'precio_compra',
+      headerName: 'P. Compra',
+      width: 130,
+      headerAlign: 'right',
+      align: 'right',
+      renderCell: (params) => formatCurrency(params.value),
+    },
+    {
+      field: 'precio_final',
+      headerName: 'P. Final',
+      width: 130,
+      headerAlign: 'right',
+      align: 'right',
+      renderCell: (params) => (
+        <strong>{formatCurrency(params.value)}</strong>
+      ),
+    },
+    {
+      field: 'porcentaje_ganancia',
+      headerName: '% Ganancia',
+      width: 110,
+      headerAlign: 'center',
+      align: 'center',
+      renderCell: (params) => {
+        const val = parseFloat(params.value);
+        if (isNaN(val)) return '-';
+        return (
+          <Chip
+            label={`${val.toFixed(1)}%`}
+            size="small"
+            sx={{
+              bgcolor: val >= 50 ? '#e8f5e9' : val >= 20 ? '#fff8e1' : '#ffebee',
+              color: val >= 50 ? '#2e7d32' : val >= 20 ? '#f57f17' : '#c62828',
+              fontWeight: 600,
+              fontSize: '0.75rem',
             }}
           />
         );
-      },
+      }
     },
-    { field: 'cantidad',               headerName: 'Cantidad',             width: 100 ,headerAlign: 'right', align: 'right' },
-    { field: 'creado_por',             headerName: 'Creado por',           width: 180 ,headerAlign: 'right', align: 'right'},
+    {
+      field: 'cantidad',
+      headerName: 'Stock',
+      width: 90,
+      headerAlign: 'center',
+      align: 'center',
+      renderCell: (params) => {
+        const qty = params.value || 0;
+        return (
+          <Chip
+            label={qty}
+            size="small"
+            sx={{
+              bgcolor: qty > 10 ? '#e8f5e9' : qty > 0 ? '#fff8e1' : '#ffebee',
+              color: qty > 10 ? '#2e7d32' : qty > 0 ? '#e65100' : '#c62828',
+              fontWeight: 700,
+              minWidth: 40,
+            }}
+          />
+        );
+      }
+    },
+    { field: 'codigo_busqueda', headerName: 'Codigo', width: 140 },
+    {
+      field: 'unidad_medida',
+      headerName: 'Unidad',
+      width: 90,
+      headerAlign: 'center',
+      align: 'center',
+    },
+    { field: 'creado_por', headerName: 'Creado por', width: 130 },
     {
       field: 'created_at',
-      headerName: 'Fecha de creación',
-      width: 200,
-      headerAlign: 'right', align: 'right',
+      headerName: 'Fecha',
+      width: 160,
       valueFormatter: (params) => {
         if (!params) return '';
         const date = new Date(params);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        const seconds = String(date.getSeconds()).padStart(2, '0');
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        return date.toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' });
       },
     },
     {
       field: 'actions',
-      headerName: 'Actions',
-      width: 150,
+      headerName: 'Acciones',
+      width: 140,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
-
+      headerAlign: 'center',
+      align: 'center',
       renderCell: (params) => (
-        <>
-          <Tooltip title="Editar producto" arrow>
-            <IconButton
-              aria-label="edit"
-              onClick={() => handleEdit(params.row)}
-              color="primary"
-            >
-              <EditIcon />
+        <Box sx={{ display: 'flex', gap: 0.5 }}>
+          <Tooltip title="Editar" arrow>
+            <IconButton size="small" onClick={() => handleEdit(params.row)} color="primary">
+              <EditIcon fontSize="small" />
             </IconButton>
           </Tooltip>
-
-          <Tooltip title="Eliminar producto" arrow>
-            <IconButton
-              aria-label="delete"
-              onClick={() => handleDelete(params.row.id)}
-              color="error"
-            >
-              <DeleteIcon />
+          <Tooltip title="Eliminar" arrow>
+            <IconButton size="small" onClick={() => handleDelete(params.row.id)} color="error">
+              <DeleteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
-
-          <Tooltip title="Agregar cantidad al producto" arrow>
-            <IconButton
-              aria-label="tickets"
-              onClick={() => handleOpenModalCantidad(params.row.id)}
-              color="secondary"
-            >
-              <ConfirmationNumberIcon />
+          <Tooltip title="Agregar cantidad" arrow>
+            <IconButton size="small" onClick={() => handleOpenModalCantidad(params.row.id)} sx={{ color: '#c9a96e' }}>
+              <ConfirmationNumberIcon fontSize="small" />
             </IconButton>
           </Tooltip>
-        </>
+        </Box>
       ),
     },
   ];
 
-  //Confirmación para eliminar
   const handleDelete = (id) => {
     dispatch(
       showAlert({
         type: "warning",
-        title: "Confirmar eliminación",
-        text: "¿Estás seguro de que deseas eliminar este registro?",
-        confirmText: "Sí, eliminar",
+        title: "Confirmar eliminacion",
+        text: "Estas seguro de que deseas eliminar este producto?",
+        confirmText: "Si, eliminar",
         cancelText: "Cancelar",
-        showCancel: true, //habilita el botón "Cancelar"
-        action: () => confirmDelete(id), //acción si confirma
-        cancelAction: () => console.log("Eliminación cancelada"), //acción si cancela (opcional)
+        showCancel: true,
+        action: () => confirmDelete(id),
       })
     );
   };
 
   const confirmDelete = (id) => {
     dispatch(deleteThunk(id));
-    dispatch(getAllThunks({ page: page + 1, pageSize }));
   };
 
   const handleEdit = (row) => {
@@ -222,48 +221,79 @@ export function DataTable() {
   };
 
   return (
-    <Box sx={{ height: { xs: '70vh', sm: '80vh', md: '100vh' }, width: '100%', overflowX: 'auto' }}>
-
-      <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-between", gap: { xs: 1.5, sm: 0 }, mb: 2 }}>
+    <Paper
+      elevation={0}
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        border: '1px solid #e0e0e0',
+        borderRadius: 3,
+        overflow: 'hidden',
+      }}
+    >
+      {/* Filtros */}
+      <Box sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', sm: 'row' },
+        justifyContent: 'space-between',
+        gap: 1.5,
+        p: 2,
+        borderBottom: '1px solid #f0f0f0',
+        bgcolor: '#fafafa',
+        flexShrink: 0,
+      }}>
         <SearchQuery />
-        <DateRange   />
+        <DateRange />
       </Box>
 
+      {/* DataGrid */}
       <DataGrid
         rows={productos?.results || []}
         columns={columns}
         paginationMode="server"
-        rowCount={productos?.count || 0} // total de registros desde el backend
-
-        paginationModel={{
-          page: page,
-          pageSize: pageSize,
-        }}
+        rowCount={productos?.count || 0}
+        paginationModel={{ page, pageSize }}
         onPaginationModelChange={(model) => {
           setPage(model.page);
           setPageSize(model.pageSize);
         }}
-
         pagination
-        pageSizeOptions={[5, 10, 20]}
+        pageSizeOptions={[20, 50, 100]}
+        rowHeight={52}
+        disableRowSelectionOnClick
         sx={{
           border: 0,
-          fontSize: { xs: '0.8rem', sm: '0.875rem', md: '16px' },
-          "& .MuiDataGrid-columnHeaders": {
-            fontSize: { xs: '0.8rem', sm: '0.9rem', md: '17px' },
-            fontWeight: 'bold',
+          flexGrow: 1,
+          '& .MuiDataGrid-columnHeaders': {
+            bgcolor: '#f8f9fa',
+            borderBottom: '2px solid #e0e0e0',
+            fontSize: '0.8rem',
+            fontWeight: 700,
+            color: '#555',
+            textTransform: 'uppercase',
+            letterSpacing: '0.3px',
           },
-          "& .MuiDataGrid-cell": {
-            fontSize: { xs: '0.75rem', sm: '0.85rem', md: '16px' },
+          '& .MuiDataGrid-cell': {
+            fontSize: '0.85rem',
+            borderBottom: '1px solid #f5f5f5',
           },
-          "& .even-row": { backgroundColor: "#f5f5f5" },
-          "& .odd-row": { backgroundColor: "#ffffff" },
+          '& .MuiDataGrid-row:hover': {
+            bgcolor: '#f5f8ff',
+          },
+          '& .MuiDataGrid-row:nth-of-type(even)': {
+            bgcolor: '#fafafa',
+          },
+          '& .MuiDataGrid-footerContainer': {
+            borderTop: '2px solid #e0e0e0',
+            bgcolor: '#f8f9fa',
+          },
+          '& .MuiDataGrid-virtualScroller': {
+            overflow: 'auto',
+          },
         }}
-        getRowClassName={(params) =>
-          params.indexRelativeToCurrentPage % 2 === 0 ? "even-row" : "odd-row"
-        }
       />
       <FormDialogModal />
-    </Box>
+    </Paper>
   );
 }

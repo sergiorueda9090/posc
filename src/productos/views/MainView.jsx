@@ -1,57 +1,57 @@
-import { useEffect }        from 'react';
-import { Grid, Typography } from '@mui/material';
-import Button               from '@mui/material/Button';
-import PersonAddAltIcon     from '@mui/icons-material/PersonAddAlt';
-
-import { DataTable }            from '../components/DataTable';
-import { resetFormularioStore } from '../../store/subcategoriaStore/subcategoriaStore';
-import { openModalShared }      from '../../store/globalStore/globalStore';
-
 import { useDispatch } from 'react-redux';
+import { Box, Button, Typography } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 
-import { SimpleBackdrop }  from "../../components/Backdrop/BackDrop";
+import { DataTable } from '../components/DataTable';
+import { resetFormularioStore } from '../../store/productoStore/productoStore';
+import { openModalShared } from '../../store/globalStore/globalStore';
+import { getAllThunks as getAllCategorias } from '../../store/categoriaStore/categoriaThunks';
+
+import { SimpleBackdrop } from "../../components/Backdrop/BackDrop";
 import { FormDialogModal } from '../components/FormDialogModal';
-import { getAllThunks as getAllCategorias }    from '../../store/categoriaStore/categoriaThunks';
-
-const title = "Crear producto";
 
 export const MainView = () => {
 
     const dispatch = useDispatch();
-    
+
     const handleOpenModal = () => {
         dispatch(resetFormularioStore());
-        dispatch(openModalShared())
+        dispatch(openModalShared());
         dispatch(getAllCategorias());
     }
-  
-  return (
-    <Grid container direction="row" justifyContent="space-between" sx={{ mb:1, flexDirection: { xs: "column", sm: "row" }, gap: { xs: 1, sm: 0 } }} alignItems="center">
 
-        <Grid item>
-            <Typography fontSize={39} fontWeight="light"> </Typography>
-        </Grid>
+    return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 100px)', overflow: 'hidden' }}>
 
-        <Grid item>
-            <Button color="primary" variant="outlined" onClick={ (e) => handleOpenModal() }>
-                <PersonAddAltIcon sx={{ fontSize:30, mr:1 }}/>
-                 {title}
-            </Button>
-        </Grid>
+            {/* Header con boton crear */}
+            <Box sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 2,
+                flexShrink: 0,
+            }}>
+                <Typography variant="h5" fontWeight={600} color="text.primary">
+                    Productos
+                </Typography>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<AddIcon />}
+                    onClick={handleOpenModal}
+                    sx={{ textTransform: 'none', px: 3 }}
+                >
+                    Crear producto
+                </Button>
+            </Box>
 
-        <Grid container sx={{ mt:2, width:"100%" }}>
-            <DataTable/>
-        </Grid>
-        
-        {/* START MODAL */}
-        <FormDialogModal />
-        {/* END MODAL */}
+            {/* Tabla */}
+            <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+                <DataTable />
+            </Box>
 
-        {/* START LOAD */}
-        <SimpleBackdrop />
-        {/* END LOAD */}
-
-
-    </Grid>
-  )
+            <FormDialogModal />
+            <SimpleBackdrop />
+        </Box>
+    )
 }

@@ -21,7 +21,7 @@ export const ResponsiveLayout = ({ children, nameModule = '' }) => {
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#fafafa' }}>
+    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden', backgroundColor: '#fafafa' }}>
       <NavBar
         drawerWidth={drawerWidth}
         nameModule={nameModule}
@@ -42,7 +42,7 @@ export const ResponsiveLayout = ({ children, nameModule = '' }) => {
           p: { xs: 1.5, sm: 2, md: 3 },
           width: '100%',
           maxWidth: '100%',
-          overflowX: 'hidden',
+          overflow: 'auto',
           transition: 'padding 0.3s ease',
         }}
       >

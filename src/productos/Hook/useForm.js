@@ -93,12 +93,12 @@ export const useForm = (productoStore) => {
       codigo_busqueda,
       unidad_medida,
       genero,
-      //cantidad,
       imagen,
     };
     const validationErrors = validateMainCreate(dataStore);
     setErrors(validationErrors);
-    return Object.keys(validationErrors).length === 0;
+    const isValid = Object.keys(validationErrors).length === 0;
+    return { isValid, validationErrors };
   };
 
   const validateUpdate = () => {
@@ -114,12 +114,12 @@ export const useForm = (productoStore) => {
       codigo_busqueda,
       unidad_medida,
       genero,
-      //cantidad,
       imagen,
     };
     const validationErrors = validateMainUpdate(dataStore);
     setErrors(validationErrors);
-    return Object.keys(validationErrors).length === 0;
+    const isValid = Object.keys(validationErrors).length === 0;
+    return { isValid, validationErrors };
   };
 
   const resetForm = () => {
