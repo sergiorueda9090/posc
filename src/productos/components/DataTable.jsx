@@ -222,9 +222,9 @@ export function DataTable() {
   };
 
   return (
-    <Box sx={{ height: '100vh', width: '100%' }}>
+    <Box sx={{ height: { xs: '70vh', sm: '80vh', md: '100vh' }, width: '100%', overflowX: 'auto' }}>
 
-      <Box display="flex" justifyContent="space-between" marginBottom={2}>
+      <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-between", gap: { xs: 1.5, sm: 0 }, mb: 2 }}>
         <SearchQuery />
         <DateRange   />
       </Box>
@@ -248,13 +248,13 @@ export function DataTable() {
         pageSizeOptions={[5, 10, 20]}
         sx={{
           border: 0,
-          fontSize: '16px', // 👈 aumenta el tamaño general del texto
+          fontSize: { xs: '0.8rem', sm: '0.875rem', md: '16px' },
           "& .MuiDataGrid-columnHeaders": {
-            fontSize: '17px', // 👈 tamaño de encabezados
+            fontSize: { xs: '0.8rem', sm: '0.9rem', md: '17px' },
             fontWeight: 'bold',
           },
           "& .MuiDataGrid-cell": {
-            fontSize: '16px', // 👈 tamaño del contenido de las celdas
+            fontSize: { xs: '0.75rem', sm: '0.85rem', md: '16px' },
           },
           "& .even-row": { backgroundColor: "#f5f5f5" },
           "& .odd-row": { backgroundColor: "#ffffff" },

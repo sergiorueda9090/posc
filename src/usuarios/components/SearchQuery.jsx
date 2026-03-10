@@ -57,7 +57,7 @@ export const SearchQuery = ({modulo}) => {
                 p: "1px 3px", 
                 display: "flex", 
                 alignItems: "center", 
-                width: 400 
+                width: { xs: "100%", sm: 400 } 
             }}
             onSubmit={(e) => {
                 e.preventDefault();

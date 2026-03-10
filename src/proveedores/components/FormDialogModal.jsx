@@ -157,7 +157,7 @@ export const FormDialogModal = () => {
             </Grid>
 
             
-            <Grid item xs={4}>
+            <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
                 id="contacto_principal"
@@ -171,7 +171,7 @@ export const FormDialogModal = () => {
               />
             </Grid>
 
-            <Grid item xs={4}>
+            <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
                 id="telefono"
@@ -185,7 +185,7 @@ export const FormDialogModal = () => {
               />
             </Grid>
 
-            <Grid item xs={4}>
+            <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
                 id="direccion"

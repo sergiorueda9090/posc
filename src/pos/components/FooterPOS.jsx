@@ -77,10 +77,12 @@ const FooterPOS = ({
         bgcolor: '#1f1f3d',
         color: 'white',
         display: 'flex',
+        flexWrap: 'wrap',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        px: 3,
-        py: 1,
+        justifyContent: { xs: 'center', md: 'space-between' },
+        px: { xs: 1, sm: 2, md: 3 },
+        py: { xs: 0.5, sm: 1 },
+        gap: { xs: 0.5, sm: 0 },
         boxShadow: '0 -3px 10px rgba(0,0,0,0.25)',
         zIndex: 1000,
         fontFamily: 'Segoe UI, sans-serif',
@@ -110,8 +112,8 @@ const FooterPOS = ({
       {/* === SEPARADOR === */}
       <Divider orientation="vertical" flexItem sx={{ mx: 2, borderColor: 'rgba(255,255,255,0.3)' }} />
 
-      {/* === SECCIÓN CENTRAL (ESTADÍSTICAS DEL TURNO) === */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      {/* === SECCION CENTRAL (ESTADISTICAS DEL TURNO) === */}
+      <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: { sm: 2, md: 4 } }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <VentasIcon sx={{ color: '#4caf50' }} />
           {ventas && ventas.total_ventas !== undefined ? (

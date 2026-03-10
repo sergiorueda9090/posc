@@ -23,9 +23,9 @@ export const AuthLayout = ({ children, title = '' }) => {
       alignItems="center"
       justifyContent="center"
       // Estilos para la imagen de fondo en el contenedor principal
-      sx={{ 
-          minHeight: '100vh', 
-          padding: 4,
+      sx={{
+          minHeight: '100vh',
+          padding: { xs: 2, sm: 4 },
           // 1. Establecer la imagen de fondo
           backgroundImage: `url(${ backgroundImage })`,
           // 2. Cubrir todo el contenedor sin repetir (clave para lo que solicitaste)
@@ -42,12 +42,11 @@ export const AuthLayout = ({ children, title = '' }) => {
         className='box-shadow'
         // Se sugiere quitar 'xs={3}' ya que el width ya está definido para pantallas pequeñas.
         // xs={ 3 } 
-        sx={{ 
-             width: { sm: 450 },
-             backgroundColor: 'white', // Fondo blanco para que el contenido resalte
-             padding: 3, 
+        sx={{
+             width: { xs: '100%', sm: 450 },
+             backgroundColor: 'white',
+             padding: { xs: 2, sm: 3 },
              borderRadius: 2,
-             // Sombra sutil para destacarlo sobre la imagen de fondo
              boxShadow: '0px 3px 10px rgba(0, 0, 0, 0.2)'
         }}>
           

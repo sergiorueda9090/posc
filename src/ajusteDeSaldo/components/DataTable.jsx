@@ -113,9 +113,9 @@ export function DataTable() {
   };
 
   return (
-    <Box sx={{ height: '100vh', width: '100%' }}>
+    <Box sx={{ height: { xs: '70vh', sm: '80vh', md: '100vh' }, width: '100%', overflowX: 'auto' }}>
 
-      <Box display="flex" justifyContent="space-between" marginBottom={2}>
+      <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-between", gap: { xs: 1.5, sm: 0 }, mb: 2 }}>
         <SearchQuery />
         <DateRange   />
       </Box>

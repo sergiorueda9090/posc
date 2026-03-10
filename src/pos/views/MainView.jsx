@@ -268,12 +268,12 @@ const MainView = () => {
 
 
     return (
-        <Container maxWidth={false} sx={{ height: '100vh', p: 0 }}>
-            <Grid container sx={{ height: '100%' }}>
+        <Container maxWidth={false} sx={{ height: { xs: 'auto', lg: '100vh' }, minHeight: '100vh', p: 0 }}>
+            <Grid container sx={{ height: { xs: 'auto', lg: '100%' } }}>
 
                 {/* COLUMNA 1: CATALOGO DE PRODUCTOS Y COMBOS */}
-                <Grid item xs={12} lg={6}>
-                    <Box sx={{ bgcolor: '#1e272e', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <Grid item xs={12} lg={6} sx={{ order: { xs: 1, lg: 1 } }}>
+                    <Box sx={{ bgcolor: '#1e272e', height: { xs: '60vh', lg: '100%' }, display: 'flex', flexDirection: 'column' }}>
                         <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: '#1e272e' }}>
                             <Tabs
                                 value={tabValue}
@@ -307,7 +307,7 @@ const MainView = () => {
                 </Grid>
 
                 {/* COLUMNA 2: CARRITO Y CLIENTE */}
-                <Grid item xs={12} sm={6} lg={3}>
+                <Grid item xs={12} sm={6} lg={3} sx={{ order: { xs: 2, lg: 2 } }}>
                     <CartSummary
                         currentClient={currentClient}
                         setCurrentClient={setCurrentClient}
@@ -317,8 +317,8 @@ const MainView = () => {
                 </Grid>
 
                 {/* COLUMNA 3: PANEL DE PAGOS MULTIPLES */}
-                <Grid item xs={12} sm={6} lg={3} sx={{ bgcolor: '#f0f2f5' }}>
-                    <Box sx={{ p: 2, height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+                <Grid item xs={12} sm={6} lg={3} sx={{ bgcolor: '#f0f2f5', order: { xs: 3, lg: 3 } }}>
+                    <Box sx={{ p: { xs: 1.5, sm: 2 }, height: { xs: 'auto', lg: '100vh' }, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
                         <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
                             Opciones de Pago
                         </Typography>

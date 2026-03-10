@@ -26,7 +26,7 @@ export const MainView = () => {
     }
   
   return (
-    <Grid container direction="row" justifyContent="space-between" sx={{ mb:1 }} alignItems='center'>
+    <Grid container direction="row" justifyContent="space-between" sx={{ mb:1, flexDirection: { xs: "column", sm: "row" }, gap: { xs: 1, sm: 0 } }} alignItems="center">
 
         <Grid item>
             <Typography fontSize={39} fontWeight="light"> </Typography>
@@ -39,7 +39,7 @@ export const MainView = () => {
             </Button>
         </Grid>
 
-        <Grid container sx={{ mt:2, width:"99.99%" }}>
+        <Grid container sx={{ mt:2, width:"100%" }}>
             <DataTable/>
         </Grid>
         

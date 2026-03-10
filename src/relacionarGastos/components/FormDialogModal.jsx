@@ -144,7 +144,7 @@ export const FormDialogModal = () => {
           </DialogContentText>
 
           <Grid container spacing={2} sx={{ marginTop: 2 }}>
-            <Grid item xs={6}>
+            <Grid item xs={12} sm={6}>
               <Autocomplete
                 options={options}
                 value={selectedOption}
@@ -166,7 +166,7 @@ export const FormDialogModal = () => {
             </Grid>
 
             
-            <Grid item xs={6}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 id="total_gasto"

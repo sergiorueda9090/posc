@@ -111,7 +111,7 @@ export const CartSummary = ({ currentClient, openClientModal, totals }) => {
     const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
 
     return (
-        <Box sx={{ p: 2, height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
+        <Box sx={{ p: { xs: 1.5, sm: 2 }, height: { xs: 'auto', lg: '100vh' }, minHeight: { xs: '50vh', lg: 'auto' }, display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
             <Typography variant="h5" sx={{ mb: 2, color: 'text.primary' }}>
                 Carrito de Venta <ShoppingCartIcon sx={{ ml: 1 }} />
             </Typography>

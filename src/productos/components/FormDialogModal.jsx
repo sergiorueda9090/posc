@@ -142,21 +142,21 @@ export const FormDialogModal = () => {
 
                 <Grid container spacing={2} sx={{ marginTop: 2 }}>
 
-                  <Grid item xs={4}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <SelectComponentProveedor />
                   </Grid>
                   
-                  <Grid item xs={4}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <SelectComponent />
                   </Grid>
 
-                  <Grid item xs={4}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <SubSelectComponent />
                   </Grid>
                 </Grid>
 
                 <Grid container spacing={2} sx={{ marginTop: 2 }}>
-                  <Grid item xs={4}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <TextField
                       fullWidth
                       id="nombre"
@@ -171,15 +171,15 @@ export const FormDialogModal = () => {
                     />
                   </Grid>
 
-                  <Grid item xs={4}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <SelectComponentUnidadMedida />
                   </Grid>
 
-                  <Grid item xs={4}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <SelectComponentGenero />
                   </Grid>
 
-                  <Grid item xs={3}>
+                  <Grid item xs={12} sm={6} md={3}>
                     <TextField
                       fullWidth
                       id="precio_compra"
@@ -194,7 +194,7 @@ export const FormDialogModal = () => {
                     />
                   </Grid>
 
-                  <Grid item xs={3}>
+                  <Grid item xs={12} sm={6} md={3}>
                     <TextField
                       fullWidth
                       id="precio_venta"
@@ -209,7 +209,7 @@ export const FormDialogModal = () => {
                     />
                   </Grid>
 
-                  <Grid item xs={2}>
+                  <Grid item xs={12} sm={6} md={2}>
                     <TextField
                       fullWidth
                       id="porcentaje_ganancia"
@@ -228,7 +228,7 @@ export const FormDialogModal = () => {
                     />
                   </Grid>
 
-                  <Grid item xs={4}>
+                  <Grid item xs={12} sm={6} md={4}>
                      <TextField
                       fullWidth
                       id="total"
@@ -262,7 +262,7 @@ export const FormDialogModal = () => {
                     />
                   </Grid>
 
-                  <Grid item xs={8}>
+                  <Grid item xs={12} sm={8}>
                     <TextField
                       fullWidth
                       id="codigo_busqueda"
@@ -278,7 +278,7 @@ export const FormDialogModal = () => {
                   </Grid>
 
                     {/* IMAGEN */}
-                    <Grid item xs={4}>
+                    <Grid item xs={12} sm={6} md={4}>
                       <Button variant="contained" component="label" fullWidth>
                         Subir Imagen
                         <input

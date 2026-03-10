@@ -48,7 +48,7 @@ export const DateRange = ({ modulo, id = '' }) => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Box display="flex" gap={1} marginBottom={2} alignItems="center">
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2, alignItems: "center" }}>
         
         {/* Fecha Inicio */}
         <DatePicker

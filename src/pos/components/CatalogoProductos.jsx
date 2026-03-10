@@ -35,8 +35,8 @@ export const CatalogoProductos = ({ addToCart }) => {
   return (
     <Box
       sx={{
-        p: 3,
-        height: '100vh',
+        p: { xs: 1.5, sm: 2, md: 3 },
+        height: { xs: '100%', lg: '100vh' },
         display: 'flex',
         flexDirection: 'column',
         bgcolor: '#1e272e',
