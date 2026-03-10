@@ -2,14 +2,18 @@ import React              from 'react';
 import ReactDOM           from 'react-dom/client';
 import { BrowserRouter }  from 'react-router-dom';
 
+import { store }    from './store/store';
+import { Provider } from 'react-redux';
 
-import {store}        from './store/store'
-import { Provider } from 'react-redux'
-
-
-import {JournalApp} from './JournalApp';
-import reportWebVitals from './reportWebVitals';
+import { JournalApp }   from './JournalApp';
+import reportWebVitals   from './reportWebVitals';
 import './styles.css';
+
+// Configurar interceptores de Axios con el store de Redux
+import { setupAxiosInterceptors } from './api/axiosInstance';
+import { logout }    from './store/authStore/authStore';
+import { showAlert } from './store/globalStore/globalStore';
+setupAxiosInterceptors(store, { logout, showAlert });
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

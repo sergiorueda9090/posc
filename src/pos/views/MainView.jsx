@@ -1,8 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Container, Grid, Box, Typography, Button, FormControl, Select, MenuItem, InputLabel, TextField, Tabs, Tab,
-         Chip, IconButton, Paper, Divider } from '@mui/material';
+import { Grid, Box, Typography, Button, FormControl, Select, MenuItem, InputLabel, TextField, Tabs, Tab,
+         Chip, IconButton, Paper, Divider, Tooltip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useNavigate } from 'react-router-dom';
 
 import {  CatalogoProductos }   from '../components/CatalogoProductos.jsx';
 import {  CatalogoCombos }      from '../components/CatalogoCombos.jsx';
@@ -38,6 +40,7 @@ const MainView = () => {
     const { codigo_venta }    = useSelector((state) => state.posStore);
     const {tarjetas} = useSelector((state) => state.tarjetasBancariasStore);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const [currentClient, setCurrentClient]         = useState(MOCK_CLIENTS_DB[0]);
     const [isClientModalOpen, setIsClientModalOpen] = useState(false);
@@ -268,17 +271,32 @@ const MainView = () => {
 
 
     return (
-        <Container maxWidth={false} sx={{ height: { xs: 'auto', lg: '100vh' }, minHeight: '100vh', p: 0 }}>
-            <Grid container sx={{ height: { xs: 'auto', lg: '100%' } }}>
+        <Box sx={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 1200, bgcolor: '#fff', overflow: 'hidden' }}>
+            <Grid container sx={{ height: '100%' }}>
 
                 {/* COLUMNA 1: CATALOGO DE PRODUCTOS Y COMBOS */}
                 <Grid item xs={12} lg={6} sx={{ order: { xs: 1, lg: 1 } }}>
                     <Box sx={{ bgcolor: '#1e272e', height: { xs: '60vh', lg: '100%' }, display: 'flex', flexDirection: 'column' }}>
-                        <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: '#1e272e' }}>
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: '#1e272e', display: 'flex', alignItems: 'center' }}>
+                            {/* Boton volver al inicio */}
+                            <Tooltip title="Volver al panel principal" arrow>
+                                <IconButton
+                                    onClick={() => navigate('/clientes')}
+                                    sx={{
+                                        ml: 1,
+                                        color: '#c9a96e',
+                                        '&:hover': { bgcolor: 'rgba(201,169,110,0.15)' },
+                                    }}
+                                >
+                                    <ArrowBackIcon />
+                                </IconButton>
+                            </Tooltip>
+
                             <Tabs
                                 value={tabValue}
                                 onChange={(e, newValue) => setTabValue(newValue)}
                                 sx={{
+                                    flexGrow: 1,
                                     '& .MuiTab-root': {
                                         color: 'rgba(255,255,255,0.6)',
                                         fontWeight: 600,
@@ -501,7 +519,6 @@ const MainView = () => {
                 handleClose={() => setIsClientModalOpen(false)}
                 currentClient={currentClient}
             />
-            <br></br><br></br>
             <FooterPOS
                 usuario="Sergio Dev"
                 rol="Administrador"
@@ -540,7 +557,7 @@ const MainView = () => {
                     }))
                 }
             />
-        </Container>
+        </Box>
     );
 };
 export { MainView };
