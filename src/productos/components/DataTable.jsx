@@ -129,22 +129,41 @@ export function DataTable() {
     {
       field: 'cantidad',
       headerName: 'Stock',
-      width: 90,
+      width: 140,
       headerAlign: 'center',
       align: 'center',
       renderCell: (params) => {
         const qty = params.value || 0;
+        const status = qty > 50
+          ? { label: 'Alto', bgcolor: '#e8f5e9', color: '#2e7d32' }
+          : qty > 10
+            ? { label: 'Estable', bgcolor: '#fff8e1', color: '#e65100' }
+            : { label: 'Bajo', bgcolor: '#ffebee', color: '#c62828' };
         return (
-          <Chip
-            label={qty}
-            size="small"
-            sx={{
-              bgcolor: qty > 10 ? '#e8f5e9' : qty > 0 ? '#fff8e1' : '#ffebee',
-              color: qty > 10 ? '#2e7d32' : qty > 0 ? '#e65100' : '#c62828',
-              fontWeight: 700,
-              minWidth: 40,
-            }}
-          />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Chip
+              label={qty}
+              size="small"
+              sx={{
+                bgcolor: status.bgcolor,
+                color: status.color,
+                fontWeight: 700,
+                minWidth: 36,
+              }}
+            />
+            <Chip
+              label={status.label}
+              size="small"
+              variant="outlined"
+              sx={{
+                borderColor: status.color,
+                color: status.color,
+                fontWeight: 600,
+                fontSize: '0.7rem',
+                height: 22,
+              }}
+            />
+          </Box>
         );
       }
     },

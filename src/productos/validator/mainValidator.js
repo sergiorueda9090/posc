@@ -11,7 +11,6 @@ export const validateMainCreate = (values) => {
   if (!values.total) errors.total = "El total es obligatorio";
   if (!values.unidad_medida) errors.unidad_medida = "La unidad de medida es obligatoria";
   if (!values.codigo_busqueda) errors.codigo_busqueda = "El código de búsqueda es obligatorio";
-  if (!values.genero) errors.genero = "El género es obligatorio";
   //if (!values.cantidad) errors.cantidad = "La cantidad es obligatoria";
 
   return errors;
@@ -30,7 +29,6 @@ export const validateMainUpdate = (values) => {
   if (!values.total) errors.total = "El total es obligatorio";
   if (!values.unidad_medida) errors.unidad_medida = "La unidad de medida es obligatoria";
   if (!values.codigo_busqueda) errors.codigo_busqueda = "El código de búsqueda es obligatorio";
-  if (!values.genero) errors.genero = "El género es obligatorio";
   //if (!values.cantidad) errors.cantidad = "La cantidad es obligatoria";
 
   return errors;

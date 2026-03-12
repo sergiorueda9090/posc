@@ -1,33 +1,52 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Grid, Box, Typography, TextField, Card, CardContent, CardMedia,
-  InputAdornment, Chip
+  InputAdornment, Chip, Pagination
 } from '@mui/material';
 import { Search as SearchIcon } from '@mui/icons-material';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import BlockIcon from '@mui/icons-material/Block';
 import { formatCurrency } from '../constants/formatCurrency';
-import { ProductosData } from '../data/ProductosData';
+import { useDispatch, useSelector } from 'react-redux';
+import { getAllThunks } from '../../store/productoStore/productoThunks';
+
+const PAGE_SIZE = 30;
 
 export const CatalogoProductos = ({ addToCart }) => {
+  const dispatch = useDispatch();
+  const { productos } = useSelector((state) => state.productoStore);
+
   const [searchTerm, setSearchTerm] = useState('');
-  const productos = ProductosData();
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
 
-  const filteredProducts = useMemo(() => {
-    if (!searchTerm) return productos;
-    const lowerCaseSearch = searchTerm.toLowerCase();
-    return productos.filter((product) =>
-      product.nombre?.toLowerCase().includes(lowerCaseSearch)
-    );
-  }, [searchTerm, productos]);
+  // Debounce de la busqueda (500ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setPage(1);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
-  // 🔥 Función para manejar el click
+  // Fetch desde el backend
+  useEffect(() => {
+    dispatch(getAllThunks({ page, pageSize: PAGE_SIZE, search: debouncedSearch }));
+  }, [dispatch, page, debouncedSearch]);
+
+  const results = productos?.results || [];
+  const totalCount = productos?.count || 0;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
+  const handlePageChange = useCallback((_, value) => {
+    setPage(value);
+  }, []);
+
   const handleProductClick = (product) => {
     if (product.cantidad > 0) {
-      // Pasar el producto con su cantidad máxima disponible explícita
       addToCart({
         ...product,
-        cantidadMaxima: product.cantidad // 🔥 Cantidad máxima disponible en inventario
+        cantidadMaxima: product.cantidad
       });
     }
   };
@@ -44,14 +63,14 @@ export const CatalogoProductos = ({ addToCart }) => {
       }}
     >
       <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>
-        🛍️ Catálogo de Productos
+        Catalogo de Productos
       </Typography>
 
-      {/* 🔍 Buscador */}
+      {/* Buscador */}
       <TextField
         fullWidth
         variant="outlined"
-        placeholder="Buscar producto..."
+        placeholder="Buscar producto por nombre, codigo o categoria..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         InputProps={{
@@ -66,35 +85,64 @@ export const CatalogoProductos = ({ addToCart }) => {
             color: 'white',
           },
         }}
-        sx={{ mb: 3 }}
+        sx={{ mb: 2 }}
       />
 
-      {/* 🧩 Listado de productos */}
+      {/* Paginacion debajo del buscador */}
+      {totalPages > 1 && (
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2, gap: 2 }}>
+          <Chip
+            label={`${totalCount} productos`}
+            size="small"
+            sx={{ bgcolor: 'rgba(255,255,255,0.12)', color: 'white', fontWeight: 600 }}
+          />
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+            size="small"
+            sx={{
+              '& .MuiPaginationItem-root': {
+                color: 'white',
+                borderColor: 'rgba(255,255,255,0.3)',
+              },
+              '& .Mui-selected': {
+                bgcolor: '#c9a96e !important',
+                color: '#1a1a2e',
+                fontWeight: 700,
+              },
+            }}
+          />
+        </Box>
+      )}
+
+      {/* Listado de productos */}
       <Box sx={{ flexGrow: 1, overflowY: 'auto', pr: 1 }}>
         <Grid container spacing={2}>
-          {filteredProducts.map((product) => {
+          {results.map((product) => {
             const sinStock = !product.cantidad || product.cantidad === 0;
 
             return (
               <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
                 <Card
                   sx={{
-                    cursor: sinStock ? 'not-allowed' : 'pointer', // 🔥 Cursor diferente
+                    cursor: sinStock ? 'not-allowed' : 'pointer',
                     height: '100%',
-                    bgcolor: sinStock ? '#e0e0e0' : '#f9f9f9', // 🔥 Fondo gris si no hay stock
+                    bgcolor: sinStock ? '#e0e0e0' : '#f9f9f9',
                     borderRadius: 3,
                     overflow: 'hidden',
-                    opacity: sinStock ? 0.6 : 1, // 🔥 Opacidad reducida
+                    opacity: sinStock ? 0.6 : 1,
                     transition: 'transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease',
-                    '&:hover': sinStock ? {} : { // 🔥 No hover si no hay stock
+                    '&:hover': sinStock ? {} : {
                       transform: 'translateY(-5px)',
                       boxShadow: '0 6px 20px rgba(0,0,0,0.2)',
                     },
-                    position: 'relative', // 🔥 Para el overlay
+                    position: 'relative',
                   }}
-                  onClick={() => handleProductClick(product)} // 🔥 Click controlado
+                  onClick={() => handleProductClick(product)}
                 >
-                  {/* 🚫 Overlay cuando no hay stock */}
+                  {/* Overlay cuando no hay stock */}
                   {sinStock && (
                     <Box
                       sx={{
@@ -112,13 +160,13 @@ export const CatalogoProductos = ({ addToCart }) => {
                       }}
                     >
                       <BlockIcon sx={{ fontSize: 60, color: 'white', mb: 1 }} />
-                      <Typography 
-                        variant="h6" 
-                        sx={{ 
-                          color: 'white', 
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: 'white',
                           fontWeight: 'bold',
                           textAlign: 'center',
-                          px: 2 
+                          px: 2
                         }}
                       >
                         SIN STOCK
@@ -126,7 +174,7 @@ export const CatalogoProductos = ({ addToCart }) => {
                     </Box>
                   )}
 
-                  {/* 🖼️ Imagen mejorada */}
+                  {/* Imagen */}
                   <Box
                     sx={{
                       position: 'relative',
@@ -160,13 +208,13 @@ export const CatalogoProductos = ({ addToCart }) => {
                     />
                   </Box>
 
-                  {/* 💬 Contenido */}
+                  {/* Contenido */}
                   <CardContent sx={{ p: 2 }}>
                     <Typography
                       variant="subtitle1"
                       sx={{
                         fontWeight: 700,
-                        color: sinStock ? '#7f8c8d' : '#2c3e50', // 🔥 Color diferente
+                        color: sinStock ? '#7f8c8d' : '#2c3e50',
                         lineHeight: 1.2,
                         mb: 1,
                       }}
@@ -177,7 +225,7 @@ export const CatalogoProductos = ({ addToCart }) => {
                     <Typography
                       variant="h6"
                       sx={{
-                        color: sinStock ? '#95a5a6' : '#16a085', // 🔥 Color diferente
+                        color: sinStock ? '#95a5a6' : '#16a085',
                         fontWeight: 800,
                         fontSize: '1.4rem',
                         mb: 1,
@@ -186,7 +234,7 @@ export const CatalogoProductos = ({ addToCart }) => {
                       {formatCurrency(product.precio_final)}
                     </Typography>
 
-                    {/* 🧾 Unidades disponibles */}
+                    {/* Unidades disponibles */}
                     <Box
                       sx={{
                         display: 'flex',
@@ -195,7 +243,7 @@ export const CatalogoProductos = ({ addToCart }) => {
                         p: 1,
                         borderRadius: 2,
                         bgcolor: sinStock
-                          ? 'rgba(192, 57, 43, 0.15)' // 🔥 Rojo si no hay stock
+                          ? 'rgba(192, 57, 43, 0.15)'
                           : product.cantidad > 0
                           ? 'rgba(39, 174, 96, 0.1)'
                           : 'rgba(192, 57, 43, 0.1)',
@@ -235,7 +283,7 @@ export const CatalogoProductos = ({ addToCart }) => {
                       </Typography>
                     </Box>
 
-                    {/* 🔥 Badge de "Sin Stock" adicional */}
+                    {/* Badge de "Sin Stock" */}
                     {sinStock && (
                       <Box sx={{ mt: 1 }}>
                         <Chip
@@ -243,7 +291,7 @@ export const CatalogoProductos = ({ addToCart }) => {
                           color="error"
                           size="small"
                           icon={<BlockIcon />}
-                          sx={{ 
+                          sx={{
                             width: '100%',
                             fontWeight: 'bold'
                           }}

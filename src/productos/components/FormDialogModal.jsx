@@ -114,7 +114,7 @@ export const FormDialogModal = () => {
     }
 
     // Limpiar y cerrar
-    handleClose();
+    handleClose(); 
   };
 
   return (
