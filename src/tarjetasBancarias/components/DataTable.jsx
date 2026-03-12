@@ -14,7 +14,7 @@ export function DataTable() {
 
   const dispatch = useDispatch();
 
-  const { tarjetas } = useSelector(state => state.tarjetasBancariasStore);
+  const { tarjetas, tarjetasCount } = useSelector(state => state.tarjetasBancariasStore);
 
   const [page,     setPage]     = React.useState(0);
   const [pageSize, setPageSize] = React.useState(30);
@@ -105,10 +105,10 @@ export function DataTable() {
       </Box>
 
       <DataGrid
-      rows={tarjetas?.results || []}
+      rows={tarjetas || []}
       columns={columns}
       paginationMode="server"
-      rowCount={tarjetas?.count || 0} // total de registros desde el backend
+      rowCount={tarjetasCount} // total de registros desde el backend
 
       paginationModel={{
         page: page,

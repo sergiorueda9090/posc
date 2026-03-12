@@ -9,6 +9,7 @@ export const tarjetasBancariasStore = createSlice({
     descripcion           : '',
     creado_por_username   : '',
     tarjetas              : [],
+    tarjetasCount         : 0,
   },
   reducers: {
     showStore:(state,action) => {
@@ -20,7 +21,8 @@ export const tarjetasBancariasStore = createSlice({
       state.creado_por_username  = creado_por_username;
     },
     listStore:(state, action) => {
-      state.tarjetas = action.payload.tarjetas;
+      state.tarjetas      = action.payload.tarjetas;
+      state.tarjetasCount = action.payload.tarjetasCount;
     },
     resetFormularioStore:(state) => {
       state.idTarjeta   = null;

@@ -41,9 +41,11 @@ export const getAllThunks = ({page = 1,  pageSize = 10, search = "", start_date 
       const response = await axios.request(options);
 
       if (response.status === 200) {
-        const tarjetas = response.data;
-        const tarjetasResults = tarjetas.results || [];
-        await dispatch(listStore({ 'tarjetas': tarjetasResults }));
+        const data = response.data;
+        await dispatch(listStore({
+          tarjetas: data.results || [],
+          tarjetasCount: data.count || 0,
+        }));
       } else {
         console.error("⚠️ Error al obtener categorias:", response);
       }
