@@ -37,3 +37,6 @@ sketch
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,react
+
+# API config
+src/constants/constantGlogal.js
