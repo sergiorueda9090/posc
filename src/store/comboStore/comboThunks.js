@@ -360,6 +360,63 @@ export const addProductToComboThunk = (comboId, productoData) => {
 
 
 // ======================================================
+// Agregar Categoría a Combo
+// ======================================================
+export const addCategoriaToComboThunk = (comboId, categoriaData) => {
+  return async (dispatch, getState) => {
+    const { authStore } = getState();
+    const token = authStore.token;
+
+    await dispatch(showBackDropStore());
+
+    const data = new FormData();
+    data.append("categoria_id", categoriaData.categoria_id);
+    data.append("precio_combo", categoriaData.precio_combo);
+    data.append("cantidad", categoriaData.cantidad || 1);
+
+    const options = {
+      method: 'POST',
+      url: `${URL}${namespace_api}${comboId}${endpoint_add_product}`,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+      data: data,
+    };
+
+    try {
+      const response = await axios.request(options);
+
+      if (response.status === 201) {
+        await dispatch(addProductoToComboStore(response.data));
+        await dispatch(getAllThunks());
+
+        await dispatch(showAlert({
+          type: "success",
+          title: "Categoría agregada",
+          text: "La categoría ha sido agregada al combo.",
+        }));
+      } else {
+        await dispatch(showAlert({
+          type: "error",
+          title: "Error al agregar categoría",
+          text: "Ocurrió un error al agregar la categoría.",
+        }));
+      }
+    } catch (error) {
+      await dispatch(showAlert({
+        type: "error",
+        title: "Error al agregar categoría",
+        text: error.response?.data?.error || "Ocurrió un error al agregar la categoría.",
+      }));
+    } finally {
+      await dispatch(hideBackDropStore());
+    }
+  };
+};
+
+
+// ======================================================
 // Eliminar Producto de Combo
 // ======================================================
 export const removeProductFromComboThunk = (comboId, productoComboId) => {

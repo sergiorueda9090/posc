@@ -23,9 +23,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
+import CategoryIcon from '@mui/icons-material/Category';
 
-import { createThunks, updateThunks, addProductToComboThunk, removeProductFromComboThunk, updateProductInComboThunk } from '../../store/comboStore/comboThunks';
+import { createThunks, updateThunks, addProductToComboThunk, removeProductFromComboThunk, updateProductInComboThunk, addCategoriaToComboThunk } from '../../store/comboStore/comboThunks';
 import { ProductoSelector } from './ProductoSelector';
+import { CategoriaSelector } from './CategoriaSelector';
 
 export const ComboForm = ({ onClose }) => {
   const dispatch = useDispatch();
@@ -40,6 +42,7 @@ export const ComboForm = ({ onClose }) => {
 
   const [openProductoSelector, setOpenProductoSelector] = useState(false);
   const [editingProducto, setEditingProducto] = useState(null);
+  const [openCategoriaSelector, setOpenCategoriaSelector] = useState(false);
 
   // Obtener nombres únicos de combos existentes para el autocomplete
   const nombresExistentes = useMemo(() => {
@@ -108,6 +111,17 @@ export const ComboForm = ({ onClose }) => {
       }
     }
     setOpenProductoSelector(false);
+  };
+
+  const handleAddCategoria = () => {
+    setOpenCategoriaSelector(true);
+  };
+
+  const handleCategoriaSelected = (categoriaData) => {
+    if (id) {
+      dispatch(addCategoriaToComboThunk(id, categoriaData));
+    }
+    setOpenCategoriaSelector(false);
   };
 
   return (
@@ -196,17 +210,31 @@ export const ComboForm = ({ onClose }) => {
             >
               Productos del Combo
             </Typography>
-            <Button
-              variant="outlined"
-              startIcon={<AddIcon />}
-              onClick={handleAddProducto}
-              sx={{
-                width: { xs: '100%', sm: 'auto' },
-                fontSize: { xs: '0.85rem', sm: '0.875rem' },
-              }}
-            >
-              Agregar Producto
-            </Button>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1 }}>
+              <Button
+                variant="outlined"
+                startIcon={<AddIcon />}
+                onClick={handleAddProducto}
+                sx={{
+                  width: { xs: '100%', sm: 'auto' },
+                  fontSize: { xs: '0.85rem', sm: '0.875rem' },
+                }}
+              >
+                Agregar Producto
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<CategoryIcon />}
+                onClick={handleAddCategoria}
+                color="secondary"
+                sx={{
+                  width: { xs: '100%', sm: 'auto' },
+                  fontSize: { xs: '0.85rem', sm: '0.875rem' },
+                }}
+              >
+                Agregar Categoría
+              </Button>
+            </Box>
           </Box>
 
           {productos.length === 0 ? (
@@ -274,7 +302,7 @@ export const ComboForm = ({ onClose }) => {
                     }
                   >
                     <ListItemText
-                      primary={producto.producto_nombre}
+                      primary={producto.producto_nombre || `Categoría: ${producto.categoria_nombre}`}
                       secondary={
                         <>
                           <Typography
@@ -418,6 +446,54 @@ export const ComboForm = ({ onClose }) => {
             editingProducto={editingProducto}
             onSelect={handleProductoSelected}
             onCancel={() => setOpenProductoSelector(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Selector de Categorías */}
+      <Dialog
+        open={openCategoriaSelector}
+        onClose={() => setOpenCategoriaSelector(false)}
+        maxWidth="sm"
+        fullWidth
+        fullScreen={isMobile}
+        sx={{
+          '& .MuiDialog-paper': {
+            borderRadius: { xs: 0, sm: 2 },
+            maxHeight: { xs: '100%', sm: '80vh' },
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            pb: 2,
+            borderBottom: '1px solid #e0e0e0',
+            fontSize: { xs: '1rem', sm: '1.25rem' },
+            fontWeight: 600,
+          }}
+        >
+          Agregar Categoría
+          <IconButton
+            aria-label="close"
+            onClick={() => setOpenCategoriaSelector(false)}
+            sx={{
+              color: 'grey.500',
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            pt: { xs: 2, sm: 3 },
+          }}
+        >
+          <CategoriaSelector
+            onSelect={handleCategoriaSelected}
+            onCancel={() => setOpenCategoriaSelector(false)}
           />
         </DialogContent>
       </Dialog>
