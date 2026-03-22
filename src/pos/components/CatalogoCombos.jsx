@@ -9,9 +9,12 @@ import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import BlockIcon from '@mui/icons-material/Block';
 import { formatCurrency } from '../constants/formatCurrency';
 import { CombosData } from '../data/CombosData';
+import { ComboCategoriaModal } from './ComboCategoriaModal';
 
 export const CatalogoCombos = ({ addToCart }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [categoriaModalOpen, setCategoriaModalOpen] = useState(false);
+  const [selectedCombo, setSelectedCombo] = useState(null);
   const combos = CombosData();
 
   const filteredCombos = useMemo(() => {
@@ -24,14 +27,29 @@ export const CatalogoCombos = ({ addToCart }) => {
 
   const handleComboClick = (combo) => {
     if (combo.cantidadMaxima > 0) {
-      // Pasar el combo con todos los datos necesarios para el carrito
-      addToCart({
-        ...combo,
-        isCombo: true,
-        cantidadMaxima: combo.cantidadMaxima,
-        precio_final: combo.precio_total, // Para consistencia con productos
-      });
+      // Verificar si el combo tiene items de categoría
+      const tieneCategorias = combo.productos?.some(p => p.categoria_id && !p.producto_id);
+
+      if (tieneCategorias) {
+        // Abrir modal para seleccionar productos de cada categoría
+        setSelectedCombo(combo);
+        setCategoriaModalOpen(true);
+      } else {
+        // Flujo normal: agregar directo al carrito
+        addToCart({
+          ...combo,
+          isCombo: true,
+          cantidadMaxima: combo.cantidadMaxima,
+          precio_final: combo.precio_total,
+        });
+      }
     }
+  };
+
+  const handleCategoriaConfirm = (comboResuelto) => {
+    setCategoriaModalOpen(false);
+    setSelectedCombo(null);
+    addToCart(comboResuelto);
   };
 
   return (
@@ -76,6 +94,7 @@ export const CatalogoCombos = ({ addToCart }) => {
         <Grid container spacing={2}>
           {filteredCombos.map((combo) => {
             const sinStock = !combo.cantidadMaxima || combo.cantidadMaxima === 0;
+            const esComboCategoria = combo.productos?.some(p => p.categoria_id && !p.producto_id);
 
             return (
               <Grid item xs={12} sm={6} md={4} lg={3} key={combo.id}>
@@ -193,7 +212,7 @@ export const CatalogoCombos = ({ addToCart }) => {
                         {combo.productos?.map((producto, index) => (
                           <ListItem key={index} sx={{ px: 0, py: 0.2 }}>
                             <ListItemText
-                              primary={`${producto.cantidad}x ${producto.producto_nombre}`}
+                              primary={`${producto.cantidad}x ${producto.producto_nombre || `[${producto.categoria_nombre}]`}`}
                               primaryTypographyProps={{
                                 variant: 'caption',
                                 color: sinStock ? '#7f8c8d' : '#34495e',
@@ -250,7 +269,7 @@ export const CatalogoCombos = ({ addToCart }) => {
                             : '#c0392b',
                         }}
                       >
-                        {combo.cantidadMaxima ?? 0}
+                        {esComboCategoria ? 'Disponible' : (combo.cantidadMaxima ?? 0)}
                       </Typography>
                     </Box>
 
@@ -294,6 +313,14 @@ export const CatalogoCombos = ({ addToCart }) => {
           </Box>
         )}
       </Box>
+
+      {/* Modal para seleccionar productos de categoría */}
+      <ComboCategoriaModal
+        open={categoriaModalOpen}
+        combo={selectedCombo}
+        onConfirm={handleCategoriaConfirm}
+        onClose={() => { setCategoriaModalOpen(false); setSelectedCombo(null); }}
+      />
     </Box>
   );
 };

@@ -63,6 +63,16 @@ export const CartItem = ({ item }) => {
             <Typography variant="body2" sx={{ fontWeight: 'medium', color: item.isDiscount ? 'error.main' : 'text.primary' }}>
                 {item.nombre}
             </Typography>
+            {/* Mostrar productos seleccionados del combo de categoría */}
+            {item.isCombo && item.productosSeleccionados?.length > 0 && (
+                <Box sx={{ ml: 1, mt: 0.3 }}>
+                    {item.productosSeleccionados.map((prod, idx) => (
+                        <Typography key={idx} variant="caption" sx={{ display: 'block', color: '#16a085', lineHeight: 1.4 }}>
+                            &bull; {prod.producto_nombre}
+                        </Typography>
+                    ))}
+                </Box>
+            )}
             {!item.isDiscount && (
                 <Typography variant="caption" color="text.secondary">
                     {formatCurrency(item.precio_final)} x {item.quantity}
