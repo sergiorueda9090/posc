@@ -111,41 +111,44 @@ export const CartSummary = ({ currentClient, openClientModal, totals }) => {
     const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
 
     return (
-        <Box sx={{ p: { xs: 1.5, sm: 2 }, height: { xs: 'auto', lg: '100vh' }, minHeight: { xs: '50vh', lg: 'auto' }, display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
-            <Typography variant="h5" sx={{ mb: 2, color: 'text.primary' }}>
-                Carrito de Venta <ShoppingCartIcon sx={{ ml: 1 }} />
-            </Typography>
+        <Box sx={{ p: { xs: 1.5, sm: 2 }, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', bgcolor: 'background.paper' }}>
+            {/* Cabecera fija */}
+            <Box sx={{ flexShrink: 0 }}>
+                <Typography variant="h5" sx={{ mb: 1.5, color: 'text.primary', display: 'flex', alignItems: 'center' }}>
+                    Carrito de Venta <ShoppingCartIcon sx={{ ml: 1 }} />
+                </Typography>
 
-            {/* Panel de Cliente */}
-            <Paper variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Cliente Actual:</Typography>
-                    <Button size="small" onClick={openClientModal} startIcon={<PeopleIcon />}>
-                        Buscar/Cambiar
-                    </Button>
-                </Box>
-                <Typography variant="body1" sx={{ mt: 0.5, fontWeight: 'medium' }}>{cliente_id.nombre}</Typography>
-                <Typography variant="caption" color="text.secondary">ID: {cliente_id.id}</Typography>
-            </Paper>
+                {/* Panel de Cliente */}
+                <Paper variant="outlined" sx={{ p: 1.5, mb: 1.5, borderRadius: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Cliente Actual:</Typography>
+                        <Button size="small" onClick={openClientModal} startIcon={<PeopleIcon />}>
+                            Buscar/Cambiar
+                        </Button>
+                    </Box>
+                    <Typography variant="body1" sx={{ mt: 0.5, fontWeight: 'medium' }}>{cliente_id.nombre}</Typography>
+                    <Typography variant="caption" color="text.secondary">ID: {cliente_id.id}</Typography>
+                </Paper>
+            </Box>
 
-            {/* Lista de Ítems */}
-            <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 1, border: '1px solid #ccc', borderRadius: 1, mb: 2, backgroundColor: '#f9f9f9' }}>
+            {/* Lista de Ítems (scroll interno) */}
+            <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', p: 1, border: '1px solid #ccc', borderRadius: 1, mb: 1.5, backgroundColor: '#f9f9f9' }}>
                 {currentCart.length === 0 ? (
                     <Typography color="text.secondary" align="center" sx={{ mt: 4 }}>
                         El carrito está vacío.
                     </Typography>
                 ) : (
                     currentCart.map((item, index) => (
-                        <CartItem 
-                            key={item.nombre + index} 
+                        <CartItem
+                            key={item.nombre + index}
                             item={item}
                         />
                     ))
                 )}
             </Box>
 
-            {/* Resumen de Totales */}
-            <Box sx={{ p: 2, border: '1px solid primary.main', borderRadius: 2, mt: 'auto', backgroundColor: '#e3f2fd' }}>
+            {/* Resumen de Totales (pegado al fondo) */}
+            <Box sx={{ flexShrink: 0, p: 2, border: '1px solid primary.main', borderRadius: 2, backgroundColor: '#e3f2fd' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography>Subtotal:</Typography>
                     <Typography>{formatCurrency(totals.subtotalAfterDiscount)}</Typography>

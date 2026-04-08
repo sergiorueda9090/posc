@@ -1,15 +1,15 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Grid, Box, Typography, Button, FormControl, Select, MenuItem, InputLabel, TextField, Tabs, Tab,
-         Chip, IconButton, Paper, Divider, Tooltip } from '@mui/material';
+         Chip, IconButton, Paper, Divider } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router-dom';
 
 import {  CatalogoProductos }   from '../components/CatalogoProductos.jsx';
 import {  CatalogoCombos }      from '../components/CatalogoCombos.jsx';
 import {  CartSummary       }   from '../components/CartSummary.jsx';
 import { ClientModal }          from '../components/ClientModal.jsx';
+import HeaderPOS                from '../components/HeaderPOS.jsx';
 
 // --- MOCK DATA (DATOS SIMULADOS) ---
 import { MOCK_CLIENTS_DB }  from '../data/ClientesData.jsx';
@@ -36,7 +36,7 @@ const METODOS_PAGO = [
 
 
 const MainView = () => {
-    const { currentCart, totals, pagos } = useSelector((state) => state.posStore);
+    const { currentCart, totals, pagos, cliente_id } = useSelector((state) => state.posStore);
     const { codigo_venta }    = useSelector((state) => state.posStore);
     const {tarjetas} = useSelector((state) => state.tarjetasBancariasStore);
     const dispatch = useDispatch();
@@ -271,43 +271,38 @@ const MainView = () => {
 
 
     return (
-        <Box sx={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 1200, bgcolor: '#fff', overflow: 'hidden' }}>
-            <Grid container sx={{ height: '100%' }}>
+        <Box sx={{ position: 'fixed', inset: 0, zIndex: 1200, bgcolor: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+            {/* === HEADER === */}
+            <HeaderPOS
+                codigoVenta={codigo_venta}
+                currentClient={cliente_id?.id ? cliente_id : currentClient}
+                onChangeClient={() => handleSetIsClientModalOpen(true)}
+            />
+
+            {/* === BODY === */}
+            <Box sx={{ flex: 1, minHeight: 0, overflow: { xs: 'auto', lg: 'hidden' } }}>
+                <Grid container sx={{ height: { xs: 'auto', lg: '100%' }, minHeight: { xs: '100%', lg: 'auto' } }}>
 
                 {/* COLUMNA 1: CATALOGO DE PRODUCTOS Y COMBOS */}
-                <Grid item xs={12} lg={6} sx={{ order: { xs: 1, lg: 1 } }}>
-                    <Box sx={{ bgcolor: '#1e272e', height: { xs: '60vh', lg: '100%' }, display: 'flex', flexDirection: 'column' }}>
-                        <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: '#1e272e', display: 'flex', alignItems: 'center' }}>
-                            {/* Boton volver al inicio */}
-                            <Tooltip title="Volver al panel principal" arrow>
-                                <IconButton
-                                    onClick={() => navigate('/clientes')}
-                                    sx={{
-                                        ml: 1,
-                                        color: '#c9a96e',
-                                        '&:hover': { bgcolor: 'rgba(201,169,110,0.15)' },
-                                    }}
-                                >
-                                    <ArrowBackIcon />
-                                </IconButton>
-                            </Tooltip>
-
+                <Grid item xs={12} lg={6} sx={{ height: { xs: 'auto', lg: '100%' }, minHeight: { xs: '60vh', lg: 'auto' } }}>
+                    <Box sx={{ bgcolor: '#1e272e', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: '#1e272e', flexShrink: 0 }}>
                             <Tabs
                                 value={tabValue}
                                 onChange={(e, newValue) => setTabValue(newValue)}
                                 sx={{
-                                    flexGrow: 1,
                                     '& .MuiTab-root': {
                                         color: 'rgba(255,255,255,0.6)',
                                         fontWeight: 600,
                                         fontSize: '1rem',
-                                        minHeight: 56,
+                                        minHeight: 48,
                                     },
                                     '& .Mui-selected': {
                                         color: '#fff !important',
                                     },
                                     '& .MuiTabs-indicator': {
-                                        backgroundColor: '#16a085',
+                                        backgroundColor: '#c9a96e',
                                         height: 3,
                                     }
                                 }}
@@ -317,7 +312,7 @@ const MainView = () => {
                             </Tabs>
                         </Box>
 
-                        <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+                        <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                             {tabValue === 0 && <CatalogoProductos addToCart={addToCart} />}
                             {tabValue === 1 && <CatalogoCombos addToCart={addToCart} />}
                         </Box>
@@ -325,7 +320,7 @@ const MainView = () => {
                 </Grid>
 
                 {/* COLUMNA 2: CARRITO Y CLIENTE */}
-                <Grid item xs={12} sm={6} lg={3} sx={{ order: { xs: 2, lg: 2 } }}>
+                <Grid item xs={12} sm={6} lg={3} sx={{ height: { xs: 'auto', lg: '100%' }, minHeight: { xs: '50vh', lg: 'auto' }, borderLeft: { lg: '1px solid #e0e0e0' } }}>
                     <CartSummary
                         currentClient={currentClient}
                         setCurrentClient={setCurrentClient}
@@ -335,12 +330,14 @@ const MainView = () => {
                 </Grid>
 
                 {/* COLUMNA 3: PANEL DE PAGOS MULTIPLES */}
-                <Grid item xs={12} sm={6} lg={3} sx={{ bgcolor: '#f0f2f5', order: { xs: 3, lg: 3 } }}>
-                    <Box sx={{ p: { xs: 1.5, sm: 2 }, height: { xs: 'auto', lg: '100vh' }, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
-                        <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+                <Grid item xs={12} sm={6} lg={3} sx={{ bgcolor: '#f0f2f5', height: { xs: 'auto', lg: '100%' }, minHeight: { xs: '50vh', lg: 'auto' }, borderLeft: { lg: '1px solid #e0e0e0' } }}>
+                    <Box sx={{ p: { xs: 1.5, sm: 2 }, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 'bold', flexShrink: 0 }}>
                             Opciones de Pago
                         </Typography>
 
+                        {/* Zona scrolleable: resumen + pagos + form */}
+                        <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pr: 0.5 }}>
                         {/* Resumen del total y restante */}
                         <Paper sx={{ p: 2, mb: 2, bgcolor: '#fff' }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -481,37 +478,42 @@ const MainView = () => {
                                 </Button>
                             </Paper>
                         )}
+                        </Box>
+                        {/* Fin zona scrolleable */}
 
-                        {/* Botones de Finalizacion */}
-                        <Button
-                            variant="contained"
-                            color="success"
-                            size="large"
-                            fullWidth
-                            onClick={handleFinalizarVenta}
-                            disabled={
-                                currentCart.length === 0 ||
-                                pagos.length === 0 ||
-                                montoRestante > 0.99
-                            }
-                            sx={{ mb: 1, height: 60 }}
-                        >
-                            Finalizar Venta
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            color="error"
-                            size="small"
-                            fullWidth
-                            onClick={handleAnularVenta}
-                            sx={{ mb: 2 }}
-                        >
-                            ANULAR VENTA
-                        </Button>
+                        {/* Botones de Finalizacion (pegados al fondo) */}
+                        <Box sx={{ flexShrink: 0, pt: 1.5, mt: 1, borderTop: '1px solid #e0e0e0' }}>
+                            <Button
+                                variant="contained"
+                                color="success"
+                                size="large"
+                                fullWidth
+                                onClick={handleFinalizarVenta}
+                                disabled={
+                                    currentCart.length === 0 ||
+                                    pagos.length === 0 ||
+                                    montoRestante > 0.99
+                                }
+                                sx={{ mb: 1, height: 56, fontWeight: 700 }}
+                            >
+                                Finalizar Venta
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                color="error"
+                                size="small"
+                                fullWidth
+                                onClick={handleAnularVenta}
+                            >
+                                ANULAR VENTA
+                            </Button>
+                        </Box>
 
                     </Box>
                 </Grid>
-            </Grid>
+                </Grid>
+            </Box>
+            {/* === FIN BODY === */}
 
             {/* MODALS */}
             <ClientModal
