@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Box, Typography, Button, IconButton, CircularProgress,
-  Card, CardContent, Grid, Chip, TextField, InputAdornment, Badge,
+  Card, CardContent, Grid, Chip, TextField, InputAdornment,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
@@ -69,14 +69,14 @@ export const ComboCategoriaModal = ({ open, combo, onConfirm, onClose }) => {
   const handleToggleProduct = (categoriaId, producto) => {
     setCategoriaState(prev => {
       const current = prev[categoriaId].selected;
-      const exists = current.find(p => p.id === producto.id);
+      const isSame = current[0]?.id === producto.id;
       return {
         ...prev,
         [categoriaId]: {
           ...prev[categoriaId],
-          selected: exists
-            ? current.filter(p => p.id !== producto.id)
-            : [...current, producto],
+          // Selección única por categoría: click en el mismo producto lo deselecciona,
+          // click en otro producto reemplaza la selección anterior.
+          selected: isSame ? [] : [producto],
         },
       };
     });
@@ -210,13 +210,13 @@ export const ComboCategoriaModal = ({ open, combo, onConfirm, onClose }) => {
                 {state.selected.length > 0 ? (
                   <Chip
                     icon={<CheckCircleIcon />}
-                    label={`${state.selected.length} seleccionado${state.selected.length > 1 ? 's' : ''}`}
+                    label="Producto seleccionado"
                     color="success"
                     variant="filled"
                     size="small"
                   />
                 ) : (
-                  <Chip label="Seleccione al menos un producto" color="warning" variant="outlined" size="small" />
+                  <Chip label="Seleccione un producto" color="warning" variant="outlined" size="small" />
                 )}
               </Box>
 
@@ -323,28 +323,26 @@ export const ComboCategoriaModal = ({ open, combo, onConfirm, onClose }) => {
 
       <DialogActions sx={{ p: 2, borderTop: '1px solid #e0e0e0', justifyContent: 'space-between' }}>
         <Typography variant="body2" sx={{ color: '#555', pl: 1 }}>
-          {totalSeleccionados} producto{totalSeleccionados !== 1 ? 's' : ''} seleccionado{totalSeleccionados !== 1 ? 's' : ''}
+          {totalSeleccionados} de {categoriaItems.length} categoría{categoriaItems.length !== 1 ? 's' : ''} completada{categoriaItems.length !== 1 ? 's' : ''}
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button onClick={onClose} sx={{ color: '#7f8c8d' }}>
             Cancelar
           </Button>
-          <Badge badgeContent={totalSeleccionados} color="success">
-            <Button
-              variant="contained"
-              onClick={handleConfirm}
-              disabled={!allHaveSelection}
-              startIcon={<ShoppingCartIcon />}
-              sx={{
-                bgcolor: '#16a085',
-                '&:hover': { bgcolor: '#1abc9c' },
-                fontWeight: 700,
-                px: 3,
-              }}
-            >
-              Agregar todos al Carrito
-            </Button>
-          </Badge>
+          <Button
+            variant="contained"
+            onClick={handleConfirm}
+            disabled={!allHaveSelection}
+            startIcon={<ShoppingCartIcon />}
+            sx={{
+              bgcolor: '#16a085',
+              '&:hover': { bgcolor: '#1abc9c' },
+              fontWeight: 700,
+              px: 3,
+            }}
+          >
+            Agregar al Carrito
+          </Button>
         </Box>
       </DialogActions>
     </Dialog>

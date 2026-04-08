@@ -57,25 +57,52 @@ export const CartItem = ({ item }) => {
         setInputValue(item.quantity.toString());
     }, [item.quantity]);
 
+    // Para combos: total de unidades reales que se descuentan del stock
+    // (suma de cantidades de cada producto del combo × cantidad de combos)
+    const unidadesPorCombo = item.isCombo
+        ? (item.productos?.reduce((sum, p) => sum + (Number(p.cantidad) || 0), 0) || 1)
+        : 1;
+    const unidadesMostradas = unidadesPorCombo * item.quantity;
+
     return (
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1, borderBottom: '1px solid #eee' }}>
         <Box sx={{ flexGrow: 1, pr: 1 }}>
             <Typography variant="body2" sx={{ fontWeight: 'medium', color: item.isDiscount ? 'error.main' : 'text.primary' }}>
                 {item.nombre}
             </Typography>
-            {/* Mostrar productos seleccionados del combo de categoría */}
-            {item.isCombo && item.productosSeleccionados?.length > 0 && (
-                <Box sx={{ ml: 1, mt: 0.3 }}>
-                    {item.productosSeleccionados.map((prod, idx) => (
-                        <Typography key={idx} variant="caption" sx={{ display: 'block', color: '#16a085', lineHeight: 1.4 }}>
-                            &bull; {prod.producto_nombre}
-                        </Typography>
-                    ))}
+            {/* Desglose completo de productos del combo (fijos + categorías resueltas) */}
+            {item.isCombo && item.productos?.length > 0 && (
+                <Box sx={{ ml: 1, mt: 0.5, pl: 1, borderLeft: '2px solid #16a085' }}>
+                    <Typography variant="caption" sx={{ display: 'block', fontWeight: 700, color: '#2c3e50', mb: 0.3 }}>
+                        Productos del Combo
+                    </Typography>
+                    {item.productos.map((prod, idx) => {
+                        const cant = Number(prod.cantidad) || 0;
+                        const precio = Number(prod.precio_combo) || 0;
+                        const subtotal = cant * precio;
+                        return (
+                            <Box key={idx} sx={{ mb: 0.4 }}>
+                                {prod.categoria_nombre && (
+                                    <Typography variant="caption" sx={{ display: 'block', color: '#7f8c8d', fontStyle: 'italic', lineHeight: 1.3 }}>
+                                        Categoría: {prod.categoria_nombre}
+                                    </Typography>
+                                )}
+                                <Typography variant="caption" sx={{ display: 'block', color: '#16a085', fontWeight: 600, lineHeight: 1.3 }}>
+                                    {prod.producto_nombre}
+                                </Typography>
+                                <Typography variant="caption" sx={{ display: 'block', color: '#555', lineHeight: 1.3 }}>
+                                    Cantidad: {cant} x {formatCurrency(precio)} — Subtotal: {formatCurrency(subtotal)}
+                                </Typography>
+                            </Box>
+                        );
+                    })}
                 </Box>
             )}
             {!item.isDiscount && (
                 <Typography variant="caption" color="text.secondary">
-                    {formatCurrency(item.precio_final)} x {item.quantity}
+                    {item.isCombo
+                        ? `${formatCurrency(item.precio_final)} x ${unidadesMostradas} unidades`
+                        : `${formatCurrency(item.precio_final)} x ${item.quantity}`}
                 </Typography>
             )}
         </Box>
